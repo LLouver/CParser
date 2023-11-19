@@ -1,45 +1,153 @@
 #ifndef LEXER_H
 #define LEXER_H
 
-#include "Symbol.h"
+#include <iostream>
+#include <vector>
 #include <string>
+#include <cstring>
+#include <iostream>
 #include <fstream>
+#include <map>
 
-using std::string;
-using std::ifstream;
+using namespace std;
 
-struct Token	//词法单元,由类型和属性值构成
+struct  Table       //符号表
 {
-	Symbol symbol;		//词法单元类型
-	int line;		//记录出错位置
-	int col;
-	string value;	//属性值,空值用null表示,全部用str存储,需要时使用sstream解析
+	int category = 0;       //类别编码
+	int index = 0;          //表中位置
+	string value = "-";             //属性值(标识符，常数的属性是其本身，其他三类符号唯一)
+
+	int row;                //行
+	int col;                //列
+
+	Table(int c, int i, string v = "-")
+	{
+		category = c;
+		index = i;
+		value = v;
+	}
 };
 
-class Lexer
+class Statistics
 {
 private:
-	char peek;
-	int line;		//当前行
-	int col;		//当前列
-	ifstream file_in;
-
-	bool getNextChar(char&, const bool = true);
-
+	int ch;         //字符总数(只统计非空且有意义的字符)
+	int row;        //行数
+	int id, num, key, op, bound;    //各类单词的个数
 public:
-	Lexer();
-	~Lexer();
+	Statistics()
+	{
+		ch = row = id = num = key = op = bound = 0;
+	}
+	void add_row()
+	{
+		row++;
+	}
+	void add_ch()
+	{
+		ch++;
+	}
+	void add_id()
+	{
+		id++;
+	}
+	void add_num()
+	{
+		num++;
+	}
+	void add_key()
+	{
+		key++;
+	}
+	void add_op()
+	{
+		op++;
+	}
+	void add_bound()
+	{
+		bound++;
+	}
 
-	//打开输入文件
-	bool openFile(const char*);
-
-    //清空数据
-    void clear_data();
-
-	//获取下一个词法单元
-	State getNextLexical(Token& next_token);
-	//扫描整个文件并输出词法分析结果
-	State scanFile(const char*);
+	int get_row()
+	{
+		return row;
+	}
+	int get_ch()
+	{
+		return ch;
+	}
+	int get_id()
+	{
+		return id;
+	}
+	int get_num()
+	{
+		return num;
+	}
+	int get_key()
+	{
+		return key;
+	}
+	int get_op()
+	{
+		return op;
+	}
+	int get_bound()
+	{
+		return bound;
+	}
 };
 
+
+class lexical_analysis {
+private:
+	string input_filename;//输入文件路径
+	string result_filename;//具体结果输出文件路径
+	string statistics_filename;//统计结果输出文件路径
+	string table_filename;//记号表输出文件路径
+	string errors_filename;//错误记录输出文件路径
+
+	vector<Table> table;        //存储所有识别到的合法符号(串)
+	Statistics sta;             //存储统计数据
+
+	int count;
+
+	void show_statistics(ofstream& outfile);      //输出统计结果
+	void show_result(ofstream& outfile);          //输出识别结果
+	void show_table(ofstream& outfile);           //输出记号表
+public:
+	lexical_analysis()
+	{
+		count = 0;
+	}
+	bool set_input(string s);
+	bool set_result(string s);
+	bool set_statistics(string s);
+	bool set_table(string s);
+	bool set_errors(string s);
+
+	int start_analysis();
+	/*
+	0：正常运行
+	1：输入文件打开失败
+	2：错误输出文件打开失败
+	3：词法分析出错
+	*/
+	int output_analysis();
+	/*
+	0：输出正常
+	1：统计结果文件打开失败
+	2：具体文件打开失败
+	3：记号表输出文件打开失败
+	*/
+
+	int getNextLexical(Table& next);
+	/*
+	0：返回失败（越界）
+	1：读取成功
+	*/
+
+	vector<Table>* get_table();
+	Statistics* get_sta();
+};
 #endif // !LEXER_H
