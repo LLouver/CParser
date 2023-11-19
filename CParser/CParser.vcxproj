@@ -165,9 +165,9 @@
     <ClInclude Include="include\common.h" />
     <ClInclude Include="include\compiler.h" />
     <ClInclude Include="include\lexer.h" />
+    <ClInclude Include="include\lexer_tools.h" />
     <ClInclude Include="include\parser.h" />
     <ClInclude Include="include\Symbol.h" />
-    <ClInclude Include="lexer_tools.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
