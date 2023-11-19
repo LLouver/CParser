@@ -1,0 +1,371 @@
+Index: CParser/lexer.cpp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>#include \"include/lexer_tools.h\"\r\n\r\nmap<string, int>::iterator temp;\r\n\r\nmap<string, int> Id;    //标识符集\r\nmap<string, int> Number;     //常数集\r\n\r\nconst vector<string> Keyword = { \"auto\", \"break\", \"case\", \"char\", \"const\", \"continue\",\r\n\t\t\t\t\t\t\t\t\"default\", \"do\", \"double\", \"else\", \"enum\", \"extern\",\r\n\t\t\t\t\t\t\t\t\"float\", \"for\", \"goto\", \"if\", \"int\", \"long\",\r\n\t\t\t\t\t\t\t\t\"register\", \"return\", \"short\", \"signed\", \"sizeof\", \"static\",\r\n\t\t\t\t\t\t\t\t\"struct\", \"switch\", \"typedef\", \"union\", \"unsigned\", \"void\",\r\n\t\t\t\t\t\t\t\t\"volatile\", \"while\"\r\n};   //C语言保留字[32]\r\n\r\nconst vector<string> Operator = { \"+\", \"-\", \"*\", \"/\", \"%\", \"++\", \"--\", //算术运算符[7]\r\n\t\t\t\t\t\t\t\t \"<\", \"<=\", \">\", \">=\", \"!=\", \"==\",  //关系运算符[6]\r\n\t\t\t\t\t\t\t\t \"&&\", \"||\", \"!\",      //逻辑运算符[3]\r\n\t\t\t\t\t\t\t\t \"&\", \"|\", \"^\", \"~\", \"<<\", \">>\",    //位运算符[6]\r\n\t\t\t\t\t\t\t\t \"=\", \"+=\", \"-=\", \"*=\", \"/=\", \"%=\", \"&=\", \"|=\", \"^=\",  //赋值运算符[9]\r\n\t\t\t\t\t\t\t\t \".\", \"->\"//    其他运算符[2]\r\n};  //运算符[33]\r\n\r\nconst vector<char> Bound = { '(', ')', '{', '}', '[', ']',\r\n\t\t\t\t\t\t\t';', ',', ':', '\\?', '\\\"', '\\'', '#','\\\\'\r\n};     //分界符[14]\r\n\r\nint state = 0;   //当前状态\r\nstring buffer = \"\";   //输入缓冲区\r\nchar character;      //当前读到的字符\r\nstring token;       //字符数组，存放当前正在识别的单词字符串\r\nint ptr;        //字符指针，指向当前读取的字符\r\n\r\nint count_col = 0;//当前字符串的起始字符位置（报错用）\r\n\r\n/*所有合法的符合(串)分为５类：标识符，常数，保留字，运算符，界符\r\n * 注释标记\"//\",\"/ *\"，词法分析不需要处理这些(指内容被直接忽略)\r\n * 约定:　　(类别编码唯一)\r\n * 标识符类别编码为１，\r\n * 常数类别编码为２，\r\n * 保留字类别编码为i+10,其中i为Keyword序列中保留字对应的下标，如\"auto\"的类别编码为10，直到\"while\"的类别编码为41\r\n * 运算符类别编码为i+50，其中i为Operator序列中运算符对应的下标，如\"+\"的类别编码为50等等\r\n * 界符类别编码为i+100，其中i为Bound序列中界符对应的下标，如\"(\"的类别编码为100，以此类推\r\n */\r\n\r\nbool Lexer::set_input(string s) {\r\n\tinput_filename = s;\r\n\treturn true;\r\n}\r\nbool Lexer::set_result(string s) {\r\n\tresult_filename = s;\r\n\treturn true;\r\n}\r\nbool Lexer::set_statistics(string s) {\r\n\tstatistics_filename = s;\r\n\treturn true;\r\n}\r\nbool Lexer::set_table(string s) {\r\n\ttable_filename = s;\r\n\treturn true;\r\n}\r\nbool Lexer::set_errors(string s) {\r\n\terrors_filename = s;\r\n\treturn true;\r\n}\r\n\r\n/*vector<Table>* lexical_analysis::get_table()\r\n{\r\n\treturn &table;\r\n}*/\r\nStatistics lexical_analysis::get_sta()\r\n{\r\n\treturn sta;\r\n}\r\nint lexical_analysis::getNextLexical(Table& next)\r\n{\r\n\tif (count >= table.size())\r\n\t\treturn 1;\r\n\r\n\tnext = table[count];\r\n\tcount++;\r\n\treturn 0;\r\n}\r\n\r\nint Lexer::start_analysis()\r\n{\r\n\tint ret = 0;\r\n\tId.clear();\r\n\tNumber.clear();\r\n\tcharacter = ' ';          //进行必要的初始化\r\n\r\n\tifstream infile;\r\n\tinfile.open(input_filename);\r\n\tif (!infile.is_open())\r\n\t\treturn 1;\r\n\r\n\tofstream outfile_errors;\r\n\toutfile_errors.open(errors_filename, ios::out);\r\n\tif (!outfile_errors.is_open())\r\n\t\treturn 2;\r\n\r\n\twhile (getline(infile, buffer))    //从文件按行读入缓冲区\r\n\t{\r\n\t\tsta.add_row();         //行数+1\r\n\t\tint category = -1;      //类别编码\r\n\t\tptr = 0;\r\n\t\ttoken = \"\";\r\n\t\tstring value;\r\n\t\tif (buffer.length() == 0)\t\t//空行不进行分析\r\n\t\t\tcontinue;\r\n\t\telse\r\n\t\t{\r\n\t\t\twhile (buffer[ptr] != '\\0')\r\n\t\t\t{\r\n\t\t\t\tget_char();\r\n\t\t\t\tget_nbc();\r\n\t\t\t\tif (character == '\\0')\r\n\t\t\t\t\tbreak;\r\n\r\n\t\t\t\tcount_col = ptr;    //记录首字符位置\r\n\r\n\t\t\t\t/*************************标识符识别*************************/\r\n\r\n\t\t\t\tif (is_letter(character) && state == 0) //开头为字母\r\n\t\t\t\t{\r\n\t\t\t\t\tstate = 1;\r\n\t\t\t\t\ttoken += character;           //收集\r\n\t\t\t\t\tsta.add_ch();          //字符总数+1,每收集一个token字符就重复此步骤\r\n\t\t\t\t\tget_char();\r\n\t\t\t\t\twhile (is_letter(character) || is_digit(character)) //后跟字母或数字\r\n\t\t\t\t\t{\r\n\t\t\t\t\t\ttoken += character;    //收集\r\n\t\t\t\t\t\tsta.add_ch();\r\n\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t}\r\n\t\t\t\t\tretract();\r\n\r\n\t\t\t\t\tcategory = is_keyword(token); //判断token是否为保留字\r\n\t\t\t\t\tif (category != -1)          //如果是保留字\r\n\t\t\t\t\t{\r\n\t\t\t\t\t\ttable.push_back(Table(category, 0, sta.get_row(), count_col));\r\n\t\t\t\t\t\tsta.add_key();\r\n\t\t\t\t\t}\r\n\t\t\t\t\telse\r\n\t\t\t\t\t{\r\n\t\t\t\t\t\tvalue = insert_id();\r\n\t\t\t\t\t\ttable.push_back(Table(1, Id[value], sta.get_row(), count_col, value)); //将识别到的标识符添加到table中\r\n\t\t\t\t\t\tsta.add_id();\r\n\t\t\t\t\t}\r\n\r\n\t\t\t\t\tstate = 0;      //标识符识别完成，复位状态\r\n\t\t\t\t\ttoken = \"\";\r\n\t\t\t\t}\r\n\r\n\t\t\t\t/*************************无符号数识别*************************/\r\n\r\n\t\t\t\telse if (is_digit(character) && state == 0) //开头为数字\r\n\t\t\t\t{\r\n\t\t\t\t\tstate = 2;\r\n\t\t\t\t\ttoken += character;\r\n\t\t\t\t\tsta.add_ch();\r\n\t\t\t\t\tget_char();\r\n\t\t\t\t\twhile (is_digit(character))      //继续读入数字\r\n\t\t\t\t\t{\r\n\t\t\t\t\t\ttoken += character;\r\n\t\t\t\t\t\tsta.add_ch();\r\n\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t}\r\n\t\t\t\t\tretract();\r\n\t\t\t\t}\r\n\t\t\t\telse if (character == '.' && state == 2)            //已经读入数字又读到小数点\r\n\t\t\t\t{\r\n\t\t\t\t\tstate = 3;\r\n\t\t\t\t\ttoken += character;           //将小数点加入token\r\n\t\t\t\t\tsta.add_ch();\r\n\t\t\t\t}\r\n\t\t\t\telse if (is_digit(character) && state == 3)\r\n\t\t\t\t{\r\n\t\t\t\t\tstate = 4;\r\n\t\t\t\t\twhile (is_digit(character))      //此时token中应是xx.的形式，若接下读到数字\r\n\t\t\t\t\t{\r\n\t\t\t\t\t\ttoken += character;\r\n\t\t\t\t\t\tsta.add_ch();\r\n\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t}\r\n\t\t\t\t\tretract();\r\n\t\t\t\t}\r\n\t\t\t\telse if (state == 2 || state == 4) //已经识别到整数/小数，判断之后是否为数字结束的标志，如果后面是字母，则是错误\r\n\t\t\t\t{\r\n\t\t\t\t\tif (is_bound(character) || is_operator(character) || character == ' ')\r\n\t\t\t\t\t{\r\n\t\t\t\t\t\tsta.add_num();\r\n\t\t\t\t\t\tvalue = insert_num();\r\n\t\t\t\t\t\ttable.push_back(Table(2, Number[value], sta.get_row(), count_col, value));\r\n\t\t\t\t\t\tretract();      //回退\r\n\t\t\t\t\t}\r\n\t\t\t\t\telse\r\n\t\t\t\t\t{\r\n\t\t\t\t\t\twhile (!(is_bound(character) || is_operator(character) || character == ' '))\r\n\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\tsta.add_ch();\r\n\t\t\t\t\t\t\ttoken += character;\r\n\t\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t\tretract();\r\n\t\t\t\t\t\toutfile_errors << \"Error (line \" << sta.get_row() << \") : there is a illegal string \" << \"\\\"\" << token << \"\\\"\" << endl;\r\n\t\t\t\t\t\tret = 3;\r\n\t\t\t\t\t}\r\n\t\t\t\t\ttoken = \"\";\r\n\t\t\t\t\tstate = 0;\r\n\t\t\t\t}\r\n\r\n\t\t\t\t/*************************注释处理********************************=*/\r\n\r\n\t\t\t\telse if (character == '/')\t\t//注释可以在任何状态下出现，故不必判断状态\r\n\t\t\t\t{\r\n\t\t\t\t\tget_char();\r\n\t\t\t\t\tif (character == '/')\t\t\t//识别到\"//\"，进入单行注释\r\n\t\t\t\t\t\tbreak;\t\t\t\t//直接忽略这一行之后的所有内容\r\n\t\t\t\t\telse if (character == '*')\t\t\t//识别到\"/*\"，进入多行注释\r\n\t\t\t\t\t\tstate = 5;\t\t//状态转移\r\n\t\t\t\t\telse\r\n\t\t\t\t\t\tretract();\t\t\t//未识别到注释标志，回退指针\r\n\t\t\t\t}\r\n\t\t\t\telse if (state == 5)\r\n\t\t\t\t{\r\n\t\t\t\t\tif (character == '*')\t\t//在注释状态(state=5)时，读到'*'\r\n\t\t\t\t\t{\r\n\t\t\t\t\t\tget_char();\t\t\t//超前扫描\r\n\t\t\t\t\t\tif (character == '/')\t\t//识别到\"*/\"，注释结束\r\n\t\t\t\t\t\t\tstate = 0;\r\n\t\t\t\t\t\telse\r\n\t\t\t\t\t\t\tretract();\r\n\t\t\t\t\t}\r\n\t\t\t\t}\r\n\r\n\t\t\t\t/*************************运算符识别*************************/\r\n\r\n\t\t\t\telse if (is_operator(character) && state == 0) //识别到运算符\r\n\t\t\t\t{\r\n\t\t\t\t\tstate = 6;\r\n\t\t\t\t\ttoken += character;\r\n\t\t\t\t\tsta.add_ch();\r\n\t\t\t\t\tchar chtemp = character;\r\n\t\t\t\t\tswitch (chtemp)    //判断是否是二目运算符\r\n\t\t\t\t\t{\r\n\t\t\t\t\tcase '+':\r\n\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t\tif (character == '+' || character == '=')    //识别到\"++\"||\"+=\"\r\n\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\ttoken += character;\r\n\t\t\t\t\t\t\tsta.add_ch();\r\n\t\t\t\t\t\t\tcategory = get_op(token);\r\n\t\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t\telse\r\n\t\t\t\t\t\t\tcategory = get_op(chtemp);\r\n\t\t\t\t\t\tretract();\r\n\t\t\t\t\t\tsta.add_op();\r\n\t\t\t\t\t\ttable.push_back(Table(category, 0, sta.get_row(), count_col));\r\n\t\t\t\t\t\ttoken = \"\";\r\n\t\t\t\t\t\tstate = 0;\r\n\t\t\t\t\t\tbreak;\r\n\r\n\t\t\t\t\tcase '-':\r\n\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t\tif (character == '-' || character == '=' || character == '>') //识别到\"--\"||\"-=\"||\"->\"\r\n\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\ttoken += character;\r\n\t\t\t\t\t\t\tsta.add_ch();\r\n\t\t\t\t\t\t\tcategory = get_op(token);\r\n\t\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t\telse\r\n\t\t\t\t\t\t\tcategory = get_op(chtemp);\r\n\t\t\t\t\t\tretract();\r\n\t\t\t\t\t\tsta.add_op();\r\n\t\t\t\t\t\ttable.push_back(Table(category, 0, sta.get_row(), count_col));\r\n\t\t\t\t\t\ttoken = \"\";\r\n\t\t\t\t\t\tstate = 0;\r\n\t\t\t\t\t\tbreak;\r\n\r\n\t\t\t\t\tcase '*':\r\n\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t\tif (character == '=')        //识别到\"*=\"\r\n\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\ttoken += character;\r\n\t\t\t\t\t\t\tsta.add_ch();\r\n\t\t\t\t\t\t\tcategory = get_op(token);\r\n\t\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t\telse\r\n\t\t\t\t\t\t\tcategory = get_op(chtemp);\r\n\t\t\t\t\t\tretract();\r\n\t\t\t\t\t\tsta.add_op();\r\n\t\t\t\t\t\ttable.push_back(Table(category, 0, sta.get_row(), count_col));\r\n\t\t\t\t\t\ttoken = \"\";\r\n\t\t\t\t\t\tstate = 0;\r\n\t\t\t\t\t\tbreak;\r\n\r\n\t\t\t\t\tcase '/':\r\n\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t\tif (character == '=')        //识别到\"/=\"\r\n\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\ttoken += character;\r\n\t\t\t\t\t\t\tsta.add_ch();\r\n\t\t\t\t\t\t\tcategory = get_op(token);\r\n\t\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t\telse\r\n\t\t\t\t\t\t\tcategory = get_op(chtemp);\r\n\t\t\t\t\t\tretract();\r\n\t\t\t\t\t\tsta.add_op();\r\n\t\t\t\t\t\ttable.push_back(Table(category, 0, sta.get_row(), count_col));\r\n\t\t\t\t\t\ttoken = \"\";\r\n\t\t\t\t\t\tstate = 0;\r\n\t\t\t\t\t\tbreak;\r\n\r\n\t\t\t\t\tcase '%':\r\n\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t\tif (character == '=')        //识别到\"%=\"\r\n\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\ttoken += character;\r\n\t\t\t\t\t\t\tsta.add_ch();\r\n\t\t\t\t\t\t\tcategory = get_op(token);\r\n\t\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t\telse\r\n\t\t\t\t\t\t\tcategory = get_op(chtemp);\r\n\t\t\t\t\t\tretract();\r\n\t\t\t\t\t\tsta.add_op();\r\n\t\t\t\t\t\ttable.push_back(Table(category, 0, sta.get_row(), count_col));\r\n\t\t\t\t\t\ttoken = \"\";\r\n\t\t\t\t\t\tstate = 0;\r\n\t\t\t\t\t\tbreak;\r\n\r\n\t\t\t\t\tcase '<':\r\n\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t\tif (character == '=' || character == '<') //识别到\"<=\"||\"<<\"\r\n\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\ttoken += character;\r\n\t\t\t\t\t\t\tsta.add_ch();\r\n\t\t\t\t\t\t\tcategory = get_op(token);\r\n\t\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t\telse\r\n\t\t\t\t\t\t\tcategory = get_op(chtemp);\r\n\t\t\t\t\t\tretract();\r\n\t\t\t\t\t\tsta.add_op();\r\n\t\t\t\t\t\ttable.push_back(Table(category, 0, sta.get_row(), count_col));\r\n\t\t\t\t\t\ttoken = \"\";\r\n\t\t\t\t\t\tstate = 0;\r\n\t\t\t\t\t\tbreak;\r\n\r\n\t\t\t\t\tcase '>':\r\n\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t\tif (character == '=' || character == '>') //识别到\">=\"||\">>\"\r\n\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\ttoken += character;\r\n\t\t\t\t\t\t\tsta.add_ch();\r\n\t\t\t\t\t\t\tcategory = get_op(token);\r\n\t\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t\telse\r\n\t\t\t\t\t\t\tcategory = get_op(chtemp);\r\n\t\t\t\t\t\tretract();\r\n\t\t\t\t\t\tsta.add_op();\r\n\t\t\t\t\t\ttable.push_back(Table(category, 0, sta.get_row(), count_col));\r\n\t\t\t\t\t\ttoken = \"\";\r\n\t\t\t\t\t\tstate = 0;\r\n\t\t\t\t\t\tbreak;\r\n\r\n\t\t\t\t\tcase '!':\r\n\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t\tif (character == '=') //识别到\"!=\"\r\n\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\ttoken += character;\r\n\t\t\t\t\t\t\tsta.add_ch();\r\n\t\t\t\t\t\t\tcategory = get_op(token);\r\n\t\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t\telse\r\n\t\t\t\t\t\t\tcategory = get_op(chtemp);\r\n\t\t\t\t\t\tretract();\r\n\t\t\t\t\t\tsta.add_op();\r\n\t\t\t\t\t\ttable.push_back(Table(category, 0, sta.get_row(), count_col));\r\n\t\t\t\t\t\ttoken = \"\";\r\n\t\t\t\t\t\tstate = 0;\r\n\t\t\t\t\t\tbreak;\r\n\r\n\t\t\t\t\tcase '=':\r\n\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t\tif (character == '=') //识别到\"==\"\r\n\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\ttoken += character;\r\n\t\t\t\t\t\t\tsta.add_ch();\r\n\t\t\t\t\t\t\tcategory = get_op(token);\r\n\t\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t\telse\r\n\t\t\t\t\t\t\tcategory = get_op(chtemp);\r\n\t\t\t\t\t\tretract();\r\n\t\t\t\t\t\tsta.add_op();\r\n\t\t\t\t\t\ttable.push_back(Table(category, 0, sta.get_row(), count_col));\r\n\t\t\t\t\t\ttoken = \"\";\r\n\t\t\t\t\t\tstate = 0;\r\n\t\t\t\t\t\tbreak;\r\n\r\n\t\t\t\t\tcase '&':\r\n\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t\tif (character == '&' || character == '=') //识别到\"&&\"||\"&=\"\r\n\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\ttoken += character;\r\n\t\t\t\t\t\t\tsta.add_ch();\r\n\t\t\t\t\t\t\tcategory = get_op(token);\r\n\t\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t\telse\r\n\t\t\t\t\t\t\tcategory = get_op(chtemp);\r\n\t\t\t\t\t\tretract();\r\n\t\t\t\t\t\tsta.add_op();\r\n\t\t\t\t\t\ttable.push_back(Table(category, 0, sta.get_row(), count_col));\r\n\t\t\t\t\t\ttoken = \"\";\r\n\t\t\t\t\t\tstate = 0;\r\n\t\t\t\t\t\tbreak;\r\n\r\n\t\t\t\t\tcase '|':\r\n\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t\tif (character == '|' || character == '=') //识别到\"||\"||\"|=\"\r\n\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\ttoken += character;\r\n\t\t\t\t\t\t\tsta.add_ch();\r\n\t\t\t\t\t\t\tcategory = get_op(token);\r\n\t\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t\telse\r\n\t\t\t\t\t\t\tcategory = get_op(chtemp);\r\n\t\t\t\t\t\tretract();\r\n\t\t\t\t\t\tsta.add_op();\r\n\t\t\t\t\t\ttable.push_back(Table(category, 0, sta.get_row(), count_col));\r\n\t\t\t\t\t\ttoken = \"\";\r\n\t\t\t\t\t\tstate = 0;\r\n\t\t\t\t\t\tbreak;\r\n\r\n\t\t\t\t\tcase '^':\r\n\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t\tif (character == '=') //识别到\"^=\"\r\n\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\ttoken += character;\r\n\t\t\t\t\t\t\tsta.add_ch();\r\n\t\t\t\t\t\t\tcategory = get_op(token);\r\n\t\t\t\t\t\t\tget_char();\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t\telse\r\n\t\t\t\t\t\t\tcategory = get_op(chtemp);\r\n\t\t\t\t\t\tretract();\r\n\t\t\t\t\t\tsta.add_op();\r\n\t\t\t\t\t\ttable.push_back(Table(category, 0, sta.get_row(), count_col));\r\n\t\t\t\t\t\ttoken = \"\";\r\n\t\t\t\t\t\tstate = 0;\r\n\t\t\t\t\t\tbreak;\r\n\r\n\t\t\t\t\tcase '~':\r\n\t\t\t\t\t\tcategory = get_op(chtemp);\r\n\t\t\t\t\t\tsta.add_op();\r\n\t\t\t\t\t\ttable.push_back(Table(category, 0, sta.get_row(), count_col));\r\n\t\t\t\t\t\ttoken = \"\";\r\n\t\t\t\t\t\tbreak;\r\n\r\n\t\t\t\t\tcase '.':\r\n\t\t\t\t\t\tcategory = get_op(chtemp);\r\n\t\t\t\t\t\tsta.add_op();\r\n\t\t\t\t\t\ttable.push_back(Table(category, 0, sta.get_row(), count_col));\r\n\t\t\t\t\t\ttoken = \"\";\r\n\t\t\t\t\t\tstate = 0;\r\n\t\t\t\t\t\tbreak;\r\n\r\n\t\t\t\t\tdefault:\r\n\t\t\t\t\t\tbreak;\r\n\t\t\t\t\t}\r\n\t\t\t\t}\r\n\r\n\t\t\t\t/*************************界符识别*************************/\r\n\r\n\t\t\t\telse if (is_bound(character) && state == 0)\r\n\t\t\t\t{\r\n\t\t\t\t\ttoken += character;\r\n\t\t\t\t\tsta.add_ch();\r\n\t\t\t\t\tsta.add_bound();\r\n\t\t\t\t\tcategory = get_bound(token);\r\n\t\t\t\t\ttable.push_back(Table(category, 0, sta.get_row(), count_col));\r\n\t\t\t\t\ttoken = \"\";\r\n\t\t\t\t\tstate = 0;\r\n\t\t\t\t}\r\n\t\t\t\t/*************************错误处理(无法识别的符号)*************************/\r\n\r\n\t\t\t\telse if (character != '\\t' && character != '\\0')\r\n\t\t\t\t{\r\n\t\t\t\t\ttoken += character;\r\n\t\t\t\t\tsta.add_ch();\r\n\t\t\t\t\toutfile_errors << \"Error (line \" << sta.get_row() << \") : there is a unrecognizable character. \" << \"\\\"\" << token << \"\\\"\" << endl;\r\n\t\t\t\t\tret = 3;\r\n\t\t\t\t\ttoken = \"\";\r\n\t\t\t\t\tstate = 0;\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t}\r\n\t}\r\n\toutfile_errors.close();\r\n\treturn ret;\r\n}\r\n\r\nint Lexer::output_analysis()\r\n{\r\n\tofstream outfile_statistics;\r\n\toutfile_statistics.open(statistics_filename, ios::out);\r\n\tif (!outfile_statistics.is_open())\r\n\t\treturn 1;\r\n\r\n\tofstream outfile_result;\r\n\toutfile_result.open(result_filename, ios::out);\r\n\tif (!outfile_result.is_open())\r\n\t\treturn 2;\r\n\r\n\tofstream outfile_table;\r\n\toutfile_table.open(table_filename, ios::out);\r\n\tif (!outfile_table.is_open())\r\n\t\treturn 3;\r\n\r\n\tshow_statistics(outfile_statistics);\r\n\tshow_result(outfile_result);\r\n\tshow_table(outfile_table);\r\n\r\n\treturn 0;\r\n}\r\n\r\nvoid Lexer::show_statistics(ofstream& outfile)\r\n{\r\n\toutfile << \"----------------------------------统计结果----------------------------------\" << endl << endl\r\n\t\t<< \"语句行数 : \" << sta.get_row() << endl\r\n\t\t<< \"字符总数 : \" << sta.get_ch() << endl\r\n\t\t<< \"保留字 : \" << sta.get_key() << endl\r\n\t\t<< \"运算符 : \" << sta.get_op() << endl\r\n\t\t<< \"界符 : \" << sta.get_bound() << endl\r\n\t\t<< \"标识符 : \" << sta.get_id() << endl\r\n\t\t<< \"常数 : \" << sta.get_num() << endl;\r\n}\r\n\r\nvoid Lexer::show_result(ofstream& outfile)\r\n{\r\n\r\n\toutfile << \"---------------------------------识别结果---------------------------------\" << endl;\r\n\toutfile << \"记号\\t\\t属性\" << endl;\r\n\r\n\tfor (int i = 0; i < int(table.size()); i++)\r\n\t{\r\n\t\toutfile << table[i].symbol << \"\\t\\t\" << table[i].value << endl;\r\n\t}\r\n\r\n\toutfile.close();\r\n}\r\n\r\nvoid Lexer::show_table(ofstream& outfile)\r\n{\r\n\r\n\toutfile << \"----------------------------------\" << \"符号－编码对照表\" << \"----------------------------------\" << endl << endl;\r\n\r\n\toutfile << \"==================\" << \"保留字\" << \"==================\" << endl;\r\n\r\n\toutfile << \"保留字符\\t\\t类别编码\" << endl;\r\n\tfor (int i = 0; i < int(Keyword.size()); i++)\r\n\t{\r\n\t\tif (Keyword[i].size() >= 8)\r\n\t\t{\r\n\t\t\toutfile << Keyword[i] << \"\\t\" << i + 10 << endl;\r\n\t\t}\r\n\t\telse\r\n\t\t{\r\n\t\t\toutfile << Keyword[i] << \"\\t\\t\" << i + 10 << endl;\r\n\t\t}\r\n\t}\r\n\r\n\toutfile << endl << \"==================\" << \"运算符\" << \"==================\" << endl;\r\n\toutfile << \"运算符\\t\\t类别编码\" << endl;\r\n\tfor (int i = 0; i < int(Operator.size()); i++)\r\n\t{\r\n\t\toutfile << Operator[i] << \"\\t\\t\" << i + 50 << endl;\r\n\t}\r\n\r\n\toutfile << endl << \"==================\" << \"界符\" << \"==================\" << endl;\r\n\toutfile << \"界符\\t\\t类别编码\" << endl;\r\n\tfor (int i = 0; i < int(Bound.size()); i++)\r\n\t{\r\n\t\toutfile << Bound[i] << \"\\t\\t\" << i + 100 << endl;\r\n\t}\r\n\r\n\toutfile << endl << \"==================\" << \"标识符\" << \"==================\" << endl;\r\n\toutfile << \"标识符\\t\\t类别编码\\t\\t表中位置\" << endl;\r\n\tfor (temp = Id.begin(); temp != Id.end(); temp++)\r\n\t{\r\n\t\tif (temp->first.size() >= 8)\r\n\t\t{\r\n\t\t\toutfile << temp->first << \"\\t1\\t\\t\" << temp->second << endl;\r\n\t\t}\r\n\t\telse\r\n\t\t{\r\n\t\t\toutfile << temp->first << \"\\t\\t1\\t\\t\" << temp->second << endl;\r\n\t\t}\r\n\t}\r\n\toutfile << endl << \"==================\" << \"常数表\" << \"==================\" << endl;\r\n\toutfile << \"常量值\\t\\t类别编码\\t\\t表中位置\" << endl;\r\n\tfor (temp = Number.begin(); temp != Number.end(); temp++)\r\n\t{\r\n\t\toutfile << temp->first << \"\\t\\t2\\t\\t\" << temp->second << endl;\r\n\t}\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/CParser/lexer.cpp b/CParser/lexer.cpp
+--- a/CParser/lexer.cpp	
++++ b/CParser/lexer.cpp	
+@@ -64,15 +64,15 @@
+ 	return true;
+ }
+ 
+-/*vector<Table>* lexical_analysis::get_table()
++/*vector<Token>* lexical_analysis::get_table()
+ {
+ 	return &table;
+ }*/
+-Statistics lexical_analysis::get_sta()
++Statistics Lexer::get_sta()
+ {
+ 	return sta;
+ }
+-int lexical_analysis::getNextLexical(Table& next)
++int Lexer::getNextLexical(Token& next)
+ {
+ 	if (count >= table.size())
+ 		return 1;
+@@ -138,13 +138,13 @@
+ 					category = is_keyword(token); //判断token是否为保留字
+ 					if (category != -1)          //如果是保留字
+ 					{
+-						table.push_back(Table(category, 0, sta.get_row(), count_col));
++						table.push_back(Token(category, 0, sta.get_row(), count_col));
+ 						sta.add_key();
+ 					}
+ 					else
+ 					{
+ 						value = insert_id();
+-						table.push_back(Table(1, Id[value], sta.get_row(), count_col, value)); //将识别到的标识符添加到table中
++						table.push_back(Token(1, Id[value], sta.get_row(), count_col, value)); //将识别到的标识符添加到table中
+ 						sta.add_id();
+ 					}
+ 
+@@ -191,7 +191,7 @@
+ 					{
+ 						sta.add_num();
+ 						value = insert_num();
+-						table.push_back(Table(2, Number[value], sta.get_row(), count_col, value));
++						table.push_back(Token(2, Number[value], sta.get_row(), count_col, value));
+ 						retract();      //回退
+ 					}
+ 					else
+@@ -257,7 +257,7 @@
+ 							category = get_op(chtemp);
+ 						retract();
+ 						sta.add_op();
+-						table.push_back(Table(category, 0, sta.get_row(), count_col));
++						table.push_back(Token(category, 0, sta.get_row(), count_col));
+ 						token = "";
+ 						state = 0;
+ 						break;
+@@ -275,7 +275,7 @@
+ 							category = get_op(chtemp);
+ 						retract();
+ 						sta.add_op();
+-						table.push_back(Table(category, 0, sta.get_row(), count_col));
++						table.push_back(Token(category, 0, sta.get_row(), count_col));
+ 						token = "";
+ 						state = 0;
+ 						break;
+@@ -293,7 +293,7 @@
+ 							category = get_op(chtemp);
+ 						retract();
+ 						sta.add_op();
+-						table.push_back(Table(category, 0, sta.get_row(), count_col));
++						table.push_back(Token(category, 0, sta.get_row(), count_col));
+ 						token = "";
+ 						state = 0;
+ 						break;
+@@ -311,7 +311,7 @@
+ 							category = get_op(chtemp);
+ 						retract();
+ 						sta.add_op();
+-						table.push_back(Table(category, 0, sta.get_row(), count_col));
++						table.push_back(Token(category, 0, sta.get_row(), count_col));
+ 						token = "";
+ 						state = 0;
+ 						break;
+@@ -329,7 +329,7 @@
+ 							category = get_op(chtemp);
+ 						retract();
+ 						sta.add_op();
+-						table.push_back(Table(category, 0, sta.get_row(), count_col));
++						table.push_back(Token(category, 0, sta.get_row(), count_col));
+ 						token = "";
+ 						state = 0;
+ 						break;
+@@ -347,7 +347,7 @@
+ 							category = get_op(chtemp);
+ 						retract();
+ 						sta.add_op();
+-						table.push_back(Table(category, 0, sta.get_row(), count_col));
++						table.push_back(Token(category, 0, sta.get_row(), count_col));
+ 						token = "";
+ 						state = 0;
+ 						break;
+@@ -365,7 +365,7 @@
+ 							category = get_op(chtemp);
+ 						retract();
+ 						sta.add_op();
+-						table.push_back(Table(category, 0, sta.get_row(), count_col));
++						table.push_back(Token(category, 0, sta.get_row(), count_col));
+ 						token = "";
+ 						state = 0;
+ 						break;
+@@ -383,7 +383,7 @@
+ 							category = get_op(chtemp);
+ 						retract();
+ 						sta.add_op();
+-						table.push_back(Table(category, 0, sta.get_row(), count_col));
++						table.push_back(Token(category, 0, sta.get_row(), count_col));
+ 						token = "";
+ 						state = 0;
+ 						break;
+@@ -401,7 +401,7 @@
+ 							category = get_op(chtemp);
+ 						retract();
+ 						sta.add_op();
+-						table.push_back(Table(category, 0, sta.get_row(), count_col));
++						table.push_back(Token(category, 0, sta.get_row(), count_col));
+ 						token = "";
+ 						state = 0;
+ 						break;
+@@ -419,7 +419,7 @@
+ 							category = get_op(chtemp);
+ 						retract();
+ 						sta.add_op();
+-						table.push_back(Table(category, 0, sta.get_row(), count_col));
++						table.push_back(Token(category, 0, sta.get_row(), count_col));
+ 						token = "";
+ 						state = 0;
+ 						break;
+@@ -437,7 +437,7 @@
+ 							category = get_op(chtemp);
+ 						retract();
+ 						sta.add_op();
+-						table.push_back(Table(category, 0, sta.get_row(), count_col));
++						table.push_back(Token(category, 0, sta.get_row(), count_col));
+ 						token = "";
+ 						state = 0;
+ 						break;
+@@ -455,7 +455,7 @@
+ 							category = get_op(chtemp);
+ 						retract();
+ 						sta.add_op();
+-						table.push_back(Table(category, 0, sta.get_row(), count_col));
++						table.push_back(Token(category, 0, sta.get_row(), count_col));
+ 						token = "";
+ 						state = 0;
+ 						break;
+@@ -463,14 +463,14 @@
+ 					case '~':
+ 						category = get_op(chtemp);
+ 						sta.add_op();
+-						table.push_back(Table(category, 0, sta.get_row(), count_col));
++						table.push_back(Token(category, 0, sta.get_row(), count_col));
+ 						token = "";
+ 						break;
+ 
+ 					case '.':
+ 						category = get_op(chtemp);
+ 						sta.add_op();
+-						table.push_back(Table(category, 0, sta.get_row(), count_col));
++						table.push_back(Token(category, 0, sta.get_row(), count_col));
+ 						token = "";
+ 						state = 0;
+ 						break;
+@@ -488,7 +488,7 @@
+ 					sta.add_ch();
+ 					sta.add_bound();
+ 					category = get_bound(token);
+-					table.push_back(Table(category, 0, sta.get_row(), count_col));
++					table.push_back(Token(category, 0, sta.get_row(), count_col));
+ 					token = "";
+ 					state = 0;
+ 				}
+Index: CParser/include/lexer_tools.h
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>#ifndef LEXER_TOOLS_H\r\n#define LEXER_TOOLS_H\r\n#include \"lexer.h\"\r\n\r\nextern char character;\r\nextern int ptr;\r\nextern string buffer;\r\nextern string token;\r\nextern int state;\r\nextern map<string, int> Id;    //��ʶ����\r\nextern map<string, int> Number;     //������\r\n\r\nextern const vector<string> Keyword;\r\nextern const vector<string> Operator;\r\nextern const vector<char> Bound;\r\n\r\nusing namespace std;\r\n\r\nbool is_letter(char ch);  //�ж��Ƿ�Ϊ��ĸ\r\n\r\nbool is_digit(char ch);   //�ж��Ƿ�Ϊ����\r\n\r\nint is_keyword(string str);  //�ж��Ƿ��ǣ����Ա�����\r\n\r\nbool is_operator(char ch);   //�ж��Ƿ�Ϊ�����\r\n\r\nbool is_bound(char ch);      //�ж��Ƿ�Ϊ���\r\n\r\nint get_op(string str);\r\nint get_op(char ch);          //��������������\r\n\r\nint get_bound(string str);      //��ý��������\r\n\r\nvoid get_char();        //ÿ����һ�Σ���ǰָ��forward��buffer�ж�ȡһ���ַ����������ŵ�character�У�Ȼ���ƶ�forward��ָ����һ���ַ�\r\nvoid get_nbc();         //ÿ�ε���ʱ���character�Ƿ�Ϊ�ո������\uDA9F\uDD38�����get_char()��ֱ��character��һ���ǿ��ַ�λ��\r\nvoid retract();         //��ǰָ�����һ���ַ�\r\n\r\nstring insert_id();        //���ұ�ʶ�����������\r\nstring insert_num();            //���ҳ������������\r\n\r\n\r\n#endif // !LEXER_TOOLS_H
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/CParser/include/lexer_tools.h b/CParser/include/lexer_tools.h
+--- a/CParser/include/lexer_tools.h	
++++ b/CParser/include/lexer_tools.h	
+@@ -1,14 +1,14 @@
+ #ifndef LEXER_TOOLS_H
+ #define LEXER_TOOLS_H
+-#include "lexer.h"
++#include "Lexer.h"
+ 
+ extern char character;
+ extern int ptr;
+ extern string buffer;
+ extern string token;
+ extern int state;
+-extern map<string, int> Id;    //��ʶ����
+-extern map<string, int> Number;     //������
++extern map<string, int> Id;    //标识符集
++extern map<string, int> Number;     //常数集
+ 
+ extern const vector<string> Keyword;
+ extern const vector<string> Operator;
+@@ -16,27 +16,27 @@
+ 
+ using namespace std;
+ 
+-bool is_letter(char ch);  //�ж��Ƿ�Ϊ��ĸ
++bool is_letter(char ch);  //判断是否为字母
+ 
+-bool is_digit(char ch);   //�ж��Ƿ�Ϊ����
++bool is_digit(char ch);   //判断是否为数字
+ 
+-int is_keyword(string str);  //�ж��Ƿ��ǣ����Ա�����
++int is_keyword(string str);  //判断是否是Ｃ语言保留字
+ 
+-bool is_operator(char ch);   //�ж��Ƿ�Ϊ�����
++bool is_operator(char ch);   //判断是否为运算符
+ 
+-bool is_bound(char ch);      //�ж��Ƿ�Ϊ���
++bool is_bound(char ch);      //判断是否为界符
+ 
+ int get_op(string str);
+-int get_op(char ch);          //��������������
++int get_op(char ch);          //获得运算符类别编码
+ 
+-int get_bound(string str);      //��ý��������
++int get_bound(string str);      //获得界符类别编码
+ 
+-void get_char();        //ÿ����һ�Σ���ǰָ��forward��buffer�ж�ȡһ���ַ����������ŵ�character�У�Ȼ���ƶ�forward��ָ����һ���ַ�
+-void get_nbc();         //ÿ�ε���ʱ���character�Ƿ�Ϊ�ո������򷴸�����get_char()��ֱ��character��һ���ǿ��ַ�λ��
+-void retract();         //��ǰָ�����һ���ַ�
++void get_char();        //每调用一次，向前指针forward从buffer中读取一个字符，并把它放到character中，然后移动forward，指向下一个字符
++void get_nbc();         //每次调用时检查character是否为空格，若是则反复调用get_char()，直到character是一个非空字符位置
++void retract();         //向前指针后退一个字符
+ 
+-string insert_id();        //���ұ�ʶ�����������
+-string insert_num();            //���ҳ������������
++string insert_id();        //查找标识符表，添加新项
++string insert_num();            //查找常数表，添加新项
+ 
+ 
+ #endif // !LEXER_TOOLS_H
+\ No newline at end of file
+Index: CParser/include/parser.h
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>#ifndef PARSER_H\r\n#define PARSER_H\r\n#include <fstream>\r\n#include <list>\r\n#include <map>\r\n#include <set>\r\n#include <vector>\r\n\r\n#include \"include/common.h\"\r\n#include \"include/lexer.h\"\r\n\r\nusing std::vector;\r\nusing std::set;\r\nusing std::map;\r\nusing std::list;\r\nusing std::ostream;\r\n\r\nstruct TNode\t//树结点\r\n{\r\n\tSymbol tag;\t//tag值\r\n\tint p;\t\t//指针\r\n\tlist<int> childs;\t//孩子结点集\r\n};\r\n\r\nstruct PTree\t//语法树\r\n{\r\n\tvector<TNode> TNode_List;\t//结点集合\r\n\tint RootNode = -1;\t\t\t\t//根结点指针\r\n};\r\n\r\n/**\r\n * Production(产生式):表示文法的一个产生式\r\n * left:左部符号\r\n * right:右部符号串\r\n */\r\nstruct Production\r\n{\r\n\tSymbol left;\r\n\tvector<Symbol> right;\r\n};\r\n\r\nenum class ActionType\t\t//LR1分析时的动作枚举值\r\n{\r\n\tshift_in,\t//移进\r\n\treduction,\t//归约\r\n\taccept,\t\t//接受\r\n\t//由于使用map存储动作,故出错状态不再存储\r\n};\r\n\r\nstruct Action\t\t//LR分析表中的一项动作\r\n{\r\n\tActionType action_type;\r\n\tint go;\t\t//当action为s时,表示转到的状态;当action为r时,表示使用第几个产生式归约\r\n};\r\n\r\nstruct GrammarProject\t//LR(1)项目\r\n{\r\n\tint id_production;\t\t\t//该项目的产生式指针,存储产生式在vector中对应的下标\r\n\tint point;\t\t\t\t//点的位置\r\n\t/* S->.E  point=0 */\r\n\t/* S->E.  point=1 */\r\n\r\n\tset<Symbol> follows;\t\t//项目后面可以跟随的终结符\r\n\t/* S->.E,#/a/b\tfollows={# a b} */\r\n\r\n\r\n\tbool operator<(const GrammarProject& gp) const {\r\n\t\t//定义比较函数使得GrammarProject可以放入set或map中.注意必须使得排序固定\r\n\t\tif (this->id_production < gp.id_production)\r\n\t\t\treturn true;\r\n\t\telse if (this->id_production > gp.id_production)\r\n\t\t\treturn false;\r\n\t\telse if (this->point < gp.point)\r\n\t\t\treturn true;\r\n\t\telse if (this->point > gp.point)\r\n\t\t\treturn false;\r\n\t\telse if (this->follows.size() < gp.follows.size())\r\n\t\t\treturn true;\r\n\t\telse if (this->follows.size() > gp.follows.size())\r\n\t\t\treturn false;\r\n\t\telse {\r\n\t\t\tfor (auto it1 = this->follows.cbegin(), it2 = gp.follows.cbegin();\r\n\t\t\t\tit1 != this->follows.cend();\r\n\t\t\t\t++it1, ++it2) {\r\n\t\t\t\tif (*it1 < *it2)\r\n\t\t\t\t\treturn true;\r\n\t\t\t\telse if (*it1 > * it2)\r\n\t\t\t\t\treturn false;\r\n\t\t\t}\r\n\t\t\treturn false;\r\n\t\t}\r\n\t}\r\n\tbool operator==(const GrammarProject& gp) const {\r\n\t\t//重载运算符，方便项目间比较\r\n\t\treturn this->id_production == gp.id_production && this->point == gp.point && this->follows == gp.follows;\r\n\t}\r\n\tbool operator!=(const GrammarProject& gp) const {\r\n\t\t//重载运算符，方便项目间比较\r\n\t\treturn !(*this == gp);\r\n\t}\r\n};\r\n\r\nclass LR1_Parser\r\n{\r\nprivate:\r\n    Lexer lexer;\t\t\t\t\t\t//词法分析器\r\n\r\n    vector<Production> productions_list;\t\t//文法集合\r\n    map<Symbol, set<Symbol>> first_list;\t\t//非终结符first集\r\n    //map<Tag, set<Tag>> follow_list;\t//非终结符follow集\r\n    vector<set<GrammarProject>> project_set_list;\t//项目集\r\n    //map<int, map<Tag, int>> state_trans_map;\t\t//项目之间的转移关系(int存储项目集的下标)\r\n    map<int, map<Symbol, Action>> action_go_map;\t\t//action表和goto表,存储在一起\r\n\r\n    PTree pTree;\t\t\t\t\t\t//语法树\r\n\r\nprivate:\r\n    State readProductionsFile(ifstream& in);\t//读入文法产生式\r\n    set<GrammarProject> getClosure(const set<GrammarProject>&);\t//求CLOSURE集\r\n    int findSameProjectSet(const set<GrammarProject>&);\t\t\t//查找相同的CLOSURE集，失败返回-1\r\n    void initFirstList();\t\t//初始化First集\r\n    State initActionGotoMap();\t//求识别活前缀的DFA\r\n\r\npublic:\t\t//记得改为private\r\n    LR1_Parser();\r\n    ~LR1_Parser();\r\n\r\n    State init(ifstream& grammar_productions_file);\t\t\t//语法分析器初始化\r\n\tState lex(ifstream& source_file);\r\n    State parse(Token&);\t//语法分析\r\n    // void printTree(ostream& out);\t\t//打印树\r\n    // void printVP_DFA(ostream& out);     //打印DFA\r\n    void clear_all();                   //清除上一轮数据\r\n};\r\n\r\n#endif // !PARSER_H\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/CParser/include/parser.h b/CParser/include/parser.h
+--- a/CParser/include/parser.h	
++++ b/CParser/include/parser.h	
+@@ -7,7 +7,7 @@
+ #include <vector>
+ 
+ #include "include/common.h"
+-#include "include/lexer.h"
++#include "include/Lexer.h"
+ 
+ using std::vector;
+ using std::set;
+Index: CParser/CParser.vcxproj
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Project DefaultTargets=\"Build\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">\r\n  <ItemGroup Label=\"ProjectConfigurations\">\r\n    <ProjectConfiguration Include=\"Debug|Win32\">\r\n      <Configuration>Debug</Configuration>\r\n      <Platform>Win32</Platform>\r\n    </ProjectConfiguration>\r\n    <ProjectConfiguration Include=\"Release|Win32\">\r\n      <Configuration>Release</Configuration>\r\n      <Platform>Win32</Platform>\r\n    </ProjectConfiguration>\r\n    <ProjectConfiguration Include=\"Debug|x64\">\r\n      <Configuration>Debug</Configuration>\r\n      <Platform>x64</Platform>\r\n    </ProjectConfiguration>\r\n    <ProjectConfiguration Include=\"Release|x64\">\r\n      <Configuration>Release</Configuration>\r\n      <Platform>x64</Platform>\r\n    </ProjectConfiguration>\r\n  </ItemGroup>\r\n  <PropertyGroup Label=\"Globals\">\r\n    <VCProjectVersion>15.0</VCProjectVersion>\r\n    <ProjectGuid>{26553A06-7439-46A3-9080-68466A6DB3A5}</ProjectGuid>\r\n    <Keyword>Win32Proj</Keyword>\r\n    <RootNamespace>CParser</RootNamespace>\r\n    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>\r\n  </PropertyGroup>\r\n  <Import Project=\"$(VCTargetsPath)\\Microsoft.Cpp.Default.props\" />\r\n  <PropertyGroup>\r\n    <PreferredToolArchitecture>x64</PreferredToolArchitecture>\r\n  </PropertyGroup>\r\n  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|Win32'\" Label=\"Configuration\">\r\n    <ConfigurationType>Application</ConfigurationType>\r\n    <UseDebugLibraries>true</UseDebugLibraries>\r\n    <PlatformToolset>v143</PlatformToolset>\r\n    <CharacterSet>Unicode</CharacterSet>\r\n  </PropertyGroup>\r\n  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|Win32'\" Label=\"Configuration\">\r\n    <ConfigurationType>Application</ConfigurationType>\r\n    <UseDebugLibraries>false</UseDebugLibraries>\r\n    <PlatformToolset>v143</PlatformToolset>\r\n    <WholeProgramOptimization>true</WholeProgramOptimization>\r\n    <CharacterSet>Unicode</CharacterSet>\r\n  </PropertyGroup>\r\n  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|x64'\" Label=\"Configuration\">\r\n    <ConfigurationType>Application</ConfigurationType>\r\n    <UseDebugLibraries>true</UseDebugLibraries>\r\n    <PlatformToolset>v143</PlatformToolset>\r\n    <CharacterSet>Unicode</CharacterSet>\r\n  </PropertyGroup>\r\n  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|x64'\" Label=\"Configuration\">\r\n    <ConfigurationType>Application</ConfigurationType>\r\n    <UseDebugLibraries>false</UseDebugLibraries>\r\n    <PlatformToolset>v143</PlatformToolset>\r\n    <WholeProgramOptimization>true</WholeProgramOptimization>\r\n    <CharacterSet>Unicode</CharacterSet>\r\n  </PropertyGroup>\r\n  <Import Project=\"$(VCTargetsPath)\\Microsoft.Cpp.props\" />\r\n  <ImportGroup Label=\"ExtensionSettings\">\r\n  </ImportGroup>\r\n  <ImportGroup Label=\"Shared\">\r\n  </ImportGroup>\r\n  <ImportGroup Label=\"PropertySheets\" Condition=\"'$(Configuration)|$(Platform)'=='Debug|Win32'\">\r\n    <Import Project=\"$(UserRootDir)\\Microsoft.Cpp.$(Platform).user.props\" Condition=\"exists('$(UserRootDir)\\Microsoft.Cpp.$(Platform).user.props')\" Label=\"LocalAppDataPlatform\" />\r\n  </ImportGroup>\r\n  <ImportGroup Label=\"PropertySheets\" Condition=\"'$(Configuration)|$(Platform)'=='Release|Win32'\">\r\n    <Import Project=\"$(UserRootDir)\\Microsoft.Cpp.$(Platform).user.props\" Condition=\"exists('$(UserRootDir)\\Microsoft.Cpp.$(Platform).user.props')\" Label=\"LocalAppDataPlatform\" />\r\n  </ImportGroup>\r\n  <ImportGroup Label=\"PropertySheets\" Condition=\"'$(Configuration)|$(Platform)'=='Debug|x64'\">\r\n    <Import Project=\"$(UserRootDir)\\Microsoft.Cpp.$(Platform).user.props\" Condition=\"exists('$(UserRootDir)\\Microsoft.Cpp.$(Platform).user.props')\" Label=\"LocalAppDataPlatform\" />\r\n  </ImportGroup>\r\n  <ImportGroup Label=\"PropertySheets\" Condition=\"'$(Configuration)|$(Platform)'=='Release|x64'\">\r\n    <Import Project=\"$(UserRootDir)\\Microsoft.Cpp.$(Platform).user.props\" Condition=\"exists('$(UserRootDir)\\Microsoft.Cpp.$(Platform).user.props')\" Label=\"LocalAppDataPlatform\" />\r\n  </ImportGroup>\r\n  <PropertyGroup Label=\"UserMacros\" />\r\n  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|Win32'\">\r\n    <LinkIncremental>true</LinkIncremental>\r\n  </PropertyGroup>\r\n  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|x64'\">\r\n    <LinkIncremental>true</LinkIncremental>\r\n  </PropertyGroup>\r\n  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|Win32'\">\r\n    <LinkIncremental>false</LinkIncremental>\r\n  </PropertyGroup>\r\n  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|x64'\">\r\n    <LinkIncremental>false</LinkIncremental>\r\n  </PropertyGroup>\r\n  <ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|Win32'\">\r\n    <ClCompile>\r\n      <PrecompiledHeader>NotUsing</PrecompiledHeader>\r\n      <WarningLevel>Level3</WarningLevel>\r\n      <Optimization>Disabled</Optimization>\r\n      <SDLCheck>true</SDLCheck>\r\n      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>\r\n      <ConformanceMode>true</ConformanceMode>\r\n      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>\r\n    </ClCompile>\r\n    <Link>\r\n      <SubSystem>Console</SubSystem>\r\n      <GenerateDebugInformation>true</GenerateDebugInformation>\r\n    </Link>\r\n  </ItemDefinitionGroup>\r\n  <ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|x64'\">\r\n    <ClCompile>\r\n      <PrecompiledHeader>NotUsing</PrecompiledHeader>\r\n      <WarningLevel>Level3</WarningLevel>\r\n      <Optimization>Disabled</Optimization>\r\n      <SDLCheck>true</SDLCheck>\r\n      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>\r\n      <ConformanceMode>true</ConformanceMode>\r\n      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>\r\n    </ClCompile>\r\n    <Link>\r\n      <SubSystem>Console</SubSystem>\r\n      <GenerateDebugInformation>true</GenerateDebugInformation>\r\n    </Link>\r\n  </ItemDefinitionGroup>\r\n  <ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|Win32'\">\r\n    <ClCompile>\r\n      <PrecompiledHeader>NotUsing</PrecompiledHeader>\r\n      <WarningLevel>Level3</WarningLevel>\r\n      <Optimization>MaxSpeed</Optimization>\r\n      <FunctionLevelLinking>true</FunctionLevelLinking>\r\n      <IntrinsicFunctions>true</IntrinsicFunctions>\r\n      <SDLCheck>true</SDLCheck>\r\n      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>\r\n      <ConformanceMode>true</ConformanceMode>\r\n      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>\r\n    </ClCompile>\r\n    <Link>\r\n      <SubSystem>Console</SubSystem>\r\n      <EnableCOMDATFolding>true</EnableCOMDATFolding>\r\n      <OptimizeReferences>true</OptimizeReferences>\r\n      <GenerateDebugInformation>true</GenerateDebugInformation>\r\n    </Link>\r\n  </ItemDefinitionGroup>\r\n  <ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|x64'\">\r\n    <ClCompile>\r\n      <PrecompiledHeader>NotUsing</PrecompiledHeader>\r\n      <WarningLevel>Level3</WarningLevel>\r\n      <Optimization>MaxSpeed</Optimization>\r\n      <FunctionLevelLinking>true</FunctionLevelLinking>\r\n      <IntrinsicFunctions>true</IntrinsicFunctions>\r\n      <SDLCheck>true</SDLCheck>\r\n      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>\r\n      <ConformanceMode>true</ConformanceMode>\r\n      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>\r\n    </ClCompile>\r\n    <Link>\r\n      <SubSystem>Console</SubSystem>\r\n      <EnableCOMDATFolding>true</EnableCOMDATFolding>\r\n      <OptimizeReferences>true</OptimizeReferences>\r\n      <GenerateDebugInformation>true</GenerateDebugInformation>\r\n    </Link>\r\n  </ItemDefinitionGroup>\r\n  <ItemGroup>\r\n    <ClCompile Include=\"compiler.cpp\" />\r\n    <ClCompile Include=\"CCompiler.cpp\" />\r\n    <ClCompile Include=\"lexer.cpp\" />\r\n    <ClCompile Include=\"lexer_tools.cpp\" />\r\n    <ClCompile Include=\"parser.cpp\" />\r\n    <ClCompile Include=\"Symbol.cpp\" />\r\n  </ItemGroup>\r\n  <ItemGroup>\r\n    <ClInclude Include=\"include\\common.h\" />\r\n    <ClInclude Include=\"include\\compiler.h\" />\r\n    <ClInclude Include=\"include\\lexer.h\" />\r\n    <ClInclude Include=\"include\\lexer_tools.h\" />\r\n    <ClInclude Include=\"include\\parser.h\" />\r\n    <ClInclude Include=\"include\\Symbol.h\" />\r\n  </ItemGroup>\r\n  <Import Project=\"$(VCTargetsPath)\\Microsoft.Cpp.targets\" />\r\n  <ImportGroup Label=\"ExtensionTargets\">\r\n  </ImportGroup>\r\n</Project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/CParser/CParser.vcxproj b/CParser/CParser.vcxproj
+--- a/CParser/CParser.vcxproj	
++++ b/CParser/CParser.vcxproj	
+@@ -164,7 +164,7 @@
+   <ItemGroup>
+     <ClInclude Include="include\common.h" />
+     <ClInclude Include="include\compiler.h" />
+-    <ClInclude Include="include\lexer.h" />
++    <ClInclude Include="include\Lexer.h" />
+     <ClInclude Include="include\lexer_tools.h" />
+     <ClInclude Include="include\parser.h" />
+     <ClInclude Include="include\Symbol.h" />
+Index: .idea/.idea.CParser/.idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"AutoGeneratedRunConfigurationManager\">\r\n    <projectFile>CParser/CParser.vcxproj</projectFile>\r\n  </component>\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"c6da364c-4816-4542-a68a-7072e9a4a44a\" name=\"Changes\" comment=\"修正include\">\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/.idea.CParser/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/.idea.CParser/.idea/workspace.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/CParser/CCompiler.cpp\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/CParser/CCompiler.cpp\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/CParser/include/lexer.h\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/CParser/include/lexer.h\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/CParser/include/lexer_tools.h\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/CParser/include/lexer_tools.h\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/CParser/lexer.cpp\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/CParser/lexer.cpp\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/CParser/parser.cpp\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/CParser/parser.cpp\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.command.1.tlog\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.command.1.tlog\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.read.1.tlog\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.read.1.tlog\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.write.1.tlog\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.write.1.tlog\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/CParser/x64/Debug/vc143.idb\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/CParser/x64/Debug/vc143.idb\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/CParser/x64/Debug/vc143.pdb\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/CParser/x64/Debug/vc143.pdb\" afterDir=\"false\" />\r\n    </list>\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"HighlightingSettingsPerFile\">\r\n    <setting file=\"file://$PROJECT_DIR$/../../../Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.31.31103/include/vector\" root0=\"SKIP_HIGHLIGHTING\" />\r\n    <setting file=\"file://$PROJECT_DIR$/CParser/main.cpp\" root0=\"FORCE_HIGHLIGHTING\" />\r\n  </component>\r\n  <component name=\"MarkdownSettingsMigration\">\r\n    <option name=\"stateVersion\" value=\"1\" />\r\n  </component>\r\n  <component name=\"MetaFilesCheckinStateConfiguration\" checkMetaFiles=\"true\" />\r\n  <component name=\"ProjectId\" id=\"2YNk0By1rMwT4yeRQs8bzMwNBtn\" />\r\n  <component name=\"ProjectLevelVcsManager\" settingsEditedManually=\"true\" />\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\"><![CDATA[{\r\n  \"keyToString\": {\r\n    \"RunOnceActivity.OpenProjectViewOnStart\": \"true\",\r\n    \"RunOnceActivity.ShowReadmeOnStart\": \"true\",\r\n    \"WebServerToolWindowFactoryState\": \"false\",\r\n    \"settings.editor.selected.configurable\": \"preferences.sourceCode.C++\",\r\n    \"settings.editor.splitter.proportion\": \"0.22505091\",\r\n    \"vue.rearranger.settings.migration\": \"true\"\r\n  },\r\n  \"keyToStringList\": {\r\n    \"rider.external.source.directories\": [\r\n      \"C:\\\\Users\\\\DELL\\\\AppData\\\\Roaming\\\\JetBrains\\\\Rider2022.3\\\\resharper-host\\\\DecompilerCache\",\r\n      \"C:\\\\Users\\\\DELL\\\\AppData\\\\Roaming\\\\JetBrains\\\\Rider2022.3\\\\resharper-host\\\\SourcesCache\",\r\n      \"C:\\\\Users\\\\DELL\\\\AppData\\\\Local\\\\Symbols\\\\src\"\r\n    ]\r\n  }\r\n}]]></component>\r\n  <component name=\"RunManager\">\r\n    <configuration name=\"CParser\" type=\"CppProject\" factoryName=\"C++ Project\">\r\n      <configuration_1>\r\n        <option name=\"CONFIGURATION\" value=\"Debug\" />\r\n        <option name=\"PLATFORM\" value=\"Win32\" />\r\n        <option name=\"PROJECT_FILE_PATH\" value=\"$PROJECT_DIR$/CParser/CParser.vcxproj\" />\r\n        <option name=\"EXE_PATH\" value=\"$(LocalDebuggerCommand)\" />\r\n        <option name=\"PROGRAM_PARAMETERS\" value=\"$(LocalDebuggerCommandArguments)\" />\r\n        <option name=\"WORKING_DIRECTORY\" value=\"$(LocalDebuggerWorkingDirectory)\" />\r\n        <option name=\"PASS_PARENT_ENVS\" value=\"1\" />\r\n        <option name=\"USE_EXTERNAL_CONSOLE\" value=\"0\" />\r\n      </configuration_1>\r\n      <configuration_2>\r\n        <option name=\"CONFIGURATION\" value=\"Debug\" />\r\n        <option name=\"PLATFORM\" value=\"x64\" />\r\n        <option name=\"PROJECT_FILE_PATH\" value=\"$PROJECT_DIR$/CParser/CParser.vcxproj\" />\r\n        <option name=\"EXE_PATH\" value=\"$(LocalDebuggerCommand)\" />\r\n        <option name=\"PROGRAM_PARAMETERS\" value=\"$(LocalDebuggerCommandArguments)\" />\r\n        <option name=\"WORKING_DIRECTORY\" value=\"$(LocalDebuggerWorkingDirectory)\" />\r\n        <option name=\"PASS_PARENT_ENVS\" value=\"1\" />\r\n        <option name=\"USE_EXTERNAL_CONSOLE\" value=\"0\" />\r\n      </configuration_2>\r\n      <configuration_3>\r\n        <option name=\"CONFIGURATION\" value=\"Release\" />\r\n        <option name=\"PLATFORM\" value=\"Win32\" />\r\n        <option name=\"PROJECT_FILE_PATH\" value=\"$PROJECT_DIR$/CParser/CParser.vcxproj\" />\r\n        <option name=\"EXE_PATH\" value=\"$(LocalDebuggerCommand)\" />\r\n        <option name=\"PROGRAM_PARAMETERS\" value=\"$(LocalDebuggerCommandArguments)\" />\r\n        <option name=\"WORKING_DIRECTORY\" value=\"$(LocalDebuggerWorkingDirectory)\" />\r\n        <option name=\"PASS_PARENT_ENVS\" value=\"1\" />\r\n        <option name=\"USE_EXTERNAL_CONSOLE\" value=\"0\" />\r\n      </configuration_3>\r\n      <configuration_4>\r\n        <option name=\"CONFIGURATION\" value=\"Release\" />\r\n        <option name=\"PLATFORM\" value=\"x64\" />\r\n        <option name=\"PROJECT_FILE_PATH\" value=\"$PROJECT_DIR$/CParser/CParser.vcxproj\" />\r\n        <option name=\"EXE_PATH\" value=\"$(LocalDebuggerCommand)\" />\r\n        <option name=\"PROGRAM_PARAMETERS\" value=\"$(LocalDebuggerCommandArguments)\" />\r\n        <option name=\"WORKING_DIRECTORY\" value=\"$(LocalDebuggerWorkingDirectory)\" />\r\n        <option name=\"PASS_PARENT_ENVS\" value=\"1\" />\r\n        <option name=\"USE_EXTERNAL_CONSOLE\" value=\"0\" />\r\n      </configuration_4>\r\n      <option name=\"DEFAULT_PROJECT_PATH\" value=\"$PROJECT_DIR$/CParser/CParser.vcxproj\" />\r\n      <method v=\"2\">\r\n        <option name=\"Build\" />\r\n      </method>\r\n    </configuration>\r\n  </component>\r\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\r\n  <component name=\"TaskManager\">\r\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\r\n      <changelist id=\"c6da364c-4816-4542-a68a-7072e9a4a44a\" name=\"Changes\" comment=\"\" />\r\n      <created>1700373199439</created>\r\n      <option name=\"number\" value=\"Default\" />\r\n      <option name=\"presentableId\" value=\"Default\" />\r\n      <updated>1700373199439</updated>\r\n      <workItem from=\"1700373201017\" duration=\"18005000\" />\r\n    </task>\r\n    <task id=\"LOCAL-00001\" summary=\"basic\">\r\n      <created>1700380720619</created>\r\n      <option name=\"number\" value=\"00001\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00001\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1700380720619</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00002\" summary=\"完成compiler项目\">\r\n      <created>1700386765955</created>\r\n      <option name=\"number\" value=\"00002\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00002\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1700386765955</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00003\" summary=\"修正include\">\r\n      <created>1700388639829</created>\r\n      <option name=\"number\" value=\"00003\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00003\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1700388639829</updated>\r\n    </task>\r\n    <option name=\"localTasksCounter\" value=\"4\" />\r\n    <servers />\r\n  </component>\r\n  <component name=\"TypeScriptGeneratedFilesManager\">\r\n    <option name=\"version\" value=\"3\" />\r\n  </component>\r\n  <component name=\"UnityCheckinConfiguration\" checkUnsavedScenes=\"true\" />\r\n  <component name=\"UnityUnitTestConfiguration\" currentTestLauncher=\"NUnit\" />\r\n  <component name=\"VcsManagerConfiguration\">\r\n    <option name=\"CLEAR_INITIAL_COMMIT_MESSAGE\" value=\"true\" />\r\n    <MESSAGE value=\"basic\" />\r\n    <MESSAGE value=\"完成compiler项目\" />\r\n    <MESSAGE value=\"修正include\" />\r\n    <option name=\"LAST_COMMIT_MESSAGE\" value=\"修正include\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/.idea.CParser/.idea/workspace.xml b/.idea/.idea.CParser/.idea/workspace.xml
+--- a/.idea/.idea.CParser/.idea/workspace.xml	
++++ b/.idea/.idea.CParser/.idea/workspace.xml	
+@@ -4,18 +4,13 @@
+     <projectFile>CParser/CParser.vcxproj</projectFile>
+   </component>
+   <component name="ChangeListManager">
+-    <list default="true" id="c6da364c-4816-4542-a68a-7072e9a4a44a" name="Changes" comment="修正include">
++    <list default="true" id="c6da364c-4816-4542-a68a-7072e9a4a44a" name="Changes" comment="修bug">
+       <change beforePath="$PROJECT_DIR$/.idea/.idea.CParser/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CParser/.idea/workspace.xml" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/CParser/CCompiler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/CCompiler.cpp" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/CParser/include/lexer.h" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/include/lexer.h" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/CParser/CParser.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/CParser.vcxproj" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/CParser/include/lexer.h" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/include/Lexer.h" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/CParser/include/lexer_tools.h" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/include/lexer_tools.h" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/CParser/include/parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/include/parser.h" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/CParser/lexer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/lexer.cpp" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/CParser/parser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/parser.cpp" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.command.1.tlog" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.command.1.tlog" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.read.1.tlog" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.read.1.tlog" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.write.1.tlog" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.write.1.tlog" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/CParser/x64/Debug/vc143.idb" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/x64/Debug/vc143.idb" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/CParser/x64/Debug/vc143.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/x64/Debug/vc143.pdb" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -24,6 +19,7 @@
+   </component>
+   <component name="HighlightingSettingsPerFile">
+     <setting file="file://$PROJECT_DIR$/../../../Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.31.31103/include/vector" root0="SKIP_HIGHLIGHTING" />
++    <setting file="mock://D:/User/Rider_workspace/CParser/CParser/CCompiler.cpp" root0="SKIP_HIGHLIGHTING" />
+     <setting file="file://$PROJECT_DIR$/CParser/main.cpp" root0="FORCE_HIGHLIGHTING" />
+   </component>
+   <component name="MarkdownSettingsMigration">
+@@ -109,7 +105,7 @@
+       <option name="number" value="Default" />
+       <option name="presentableId" value="Default" />
+       <updated>1700373199439</updated>
+-      <workItem from="1700373201017" duration="18005000" />
++      <workItem from="1700373201017" duration="21750000" />
+     </task>
+     <task id="LOCAL-00001" summary="basic">
+       <created>1700380720619</created>
+@@ -132,7 +128,14 @@
+       <option name="project" value="LOCAL" />
+       <updated>1700388639829</updated>
+     </task>
+-    <option name="localTasksCounter" value="4" />
++    <task id="LOCAL-00004" summary="修bug">
++      <created>1700394982298</created>
++      <option name="number" value="00004" />
++      <option name="presentableId" value="LOCAL-00004" />
++      <option name="project" value="LOCAL" />
++      <updated>1700394982298</updated>
++    </task>
++    <option name="localTasksCounter" value="5" />
+     <servers />
+   </component>
+   <component name="TypeScriptGeneratedFilesManager">
+@@ -145,6 +148,7 @@
+     <MESSAGE value="basic" />
+     <MESSAGE value="完成compiler项目" />
+     <MESSAGE value="修正include" />
+-    <option name="LAST_COMMIT_MESSAGE" value="修正include" />
++    <MESSAGE value="修bug" />
++    <option name="LAST_COMMIT_MESSAGE" value="修bug" />
+   </component>
+ </project>
+\ No newline at end of file

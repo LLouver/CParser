@@ -1,0 +1,25 @@
+Index: CParser/include/lexer.h
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/CParser/include/lexer.h b/CParser/include/Lexer.h
+rename from CParser/include/lexer.h
+rename to CParser/include/Lexer.h
+--- a/CParser/include/lexer.h	
++++ b/CParser/include/Lexer.h	
+@@ -20,12 +20,12 @@
+ 	int line;                //行
+ 	int col;                //列
+ 
+-	Table(int c, int i, int r, int co, string v = "-")
++	Token(int c, int i, int r, int co, string v = "-")
+ 	{
+ 		symbol = c;
+ 		index = i;
+ 		value = v;
+-		row = r;
++		line = r;
+ 		col = co;
+ 	}
+ };
