@@ -1,0 +1,16 @@
+﻿  lexer.cpp
+D:\Users\Jarvis\Source\Repos\CParser\CParser\lexer.cpp(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+D:\Users\Jarvis\Source\Repos\CParser\CParser\include\lexer.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+D:\Users\Jarvis\Source\Repos\CParser\CParser\lexer.cpp(553,13): error C2001: 常量中有换行符
+D:\Users\Jarvis\Source\Repos\CParser\CParser\lexer.cpp(555,2): error C2143: 语法错误: 缺少“;”(在“for”的前面)
+D:\Users\Jarvis\Source\Repos\CParser\CParser\lexer.cpp(568,58): error C2059: 语法错误:“==”
+D:\Users\Jarvis\Source\Repos\CParser\CParser\lexer.cpp(568,74): error C2001: 常量中有换行符
+D:\Users\Jarvis\Source\Repos\CParser\CParser\lexer.cpp(583,66): error C2059: 语法错误:“==”
+D:\Users\Jarvis\Source\Repos\CParser\CParser\lexer.cpp(583,82): error C2001: 常量中有换行符
+D:\Users\Jarvis\Source\Repos\CParser\CParser\lexer.cpp(597,66): error C2059: 语法错误:“==”
+D:\Users\Jarvis\Source\Repos\CParser\CParser\lexer.cpp(597,82): error C2001: 常量中有换行符
+D:\Users\Jarvis\Source\Repos\CParser\CParser\lexer.cpp(610,66): error C2059: 语法错误:“==”
+D:\Users\Jarvis\Source\Repos\CParser\CParser\lexer.cpp(610,82): error C2001: 常量中有换行符
+  lexer_tools.cpp
+D:\Users\Jarvis\Source\Repos\CParser\CParser\include\lexer.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+  正在生成代码...

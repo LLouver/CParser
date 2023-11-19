@@ -13,39 +13,98 @@ enum class Symbol
 {
 	//终结符
 	epsilon = 0,	//空
-	the_end,		//#,表示终止
 	id,				//标识符
 	num,			//数字,包括整数和小数
-	//符号 symbol
-	sb_add=50,			//+
-	sb_sub,			//-
-	sb_time,		//*
-	sb_divide,		///
-	sb_assign,		//=
-	sb_equal,		//==
-	sb_g,			//>
-	sb_ge,			//>=
-	sb_l,			//<
-	sb_le,			//<=
-	sb_ne,			//!=
-	sb_board,		//界符 ;
-	sb_separator,	//分隔符 ,
-	sb_llb,			//左小括号 left little bracket
-	sb_rlb,			//右小括号
-	sb_lbb,			//左大括号 left big bracket
-	sb_rbb,			//右大括号
-	//关键字 keyword
-	kw_int=10,			//int类型
-	kw_void,
-	kw_if,			//if语句关键字
-	kw_else,
-	kw_while,		//while关键字
-	kw_return,		//return关键字
+	the_end,		//#,表示终止
 
+	//关键字 keyword
+	kw_auto = 10,
+	kw_break,
+	kw_case,
+	kw_char,
+	kw_const,
+	kw_continue,
+	kw_default,
+	kw_do,
+	kw_double,
+	kw_else,
+	kw_enum,
+	kw_extern,
+	kw_float,
+	kw_for,
+	kw_goto,
+	kw_if,
+	kw_int,
+	kw_long,
+	kw_register,
+	kw_return,
+	kw_short,
+	kw_signed,
+	kw_sizeof,
+	kw_static,
+	kw_struct,
+	kw_switch,
+	kw_typedef,
+	kw_union,
+	kw_unsigned,
+	kw_void,
+	kw_volatile,
+	kw_while,
+
+	//运算符
+	sb_add = 50,
+	sb_sub,
+	sb_mult,
+	sb_div,
+	sb_mod,
+	sb_double_add,
+	sb_double_sub,
+	sb_less,
+	sb_less_equal,
+	sb_more,
+	sb_more_equal,
+	sb_not_equal,
+	sb_equal,
+	sb_and,
+	sb_or,
+	sb_not,
+	sb_b_and,
+	sb_b_or,
+	sb_xor,
+	sb_b_not,
+	sb_b_left,
+	sb_b_right,
+	sb_assign,
+	sb_add_assign,
+	sb_sub_assign,
+	sb_mult_assign,
+	sb_div_assign,
+	sb_mod_assign,
+	sb_and_assign,
+	sb_or_assign,
+	sb_not_assign,
+	sb_point,
+	sb_for,
+
+	//分界符
+	sb_left_parenthesis = 100,
+	sb_right_parenthesis,
+	sb_left_brace,
+	sb_right_brace,
+	sb_left_bracket,
+	sb_right_bracket,
+	sb_semicolon,
+	sb_comma,
+	sb_colon,
+	sb_semicolon,
+	sb_double_quotation,
+	sb_single_quotation,
+	sb_pound,
+	sb_backslash,
 
 	//终结符和非终结符的分界线
 	//此枚举值仅用作区分终结符和非终结符
-	vtnboundary,
+	vtnboundary = 200,
 
 
 	//非终结符
