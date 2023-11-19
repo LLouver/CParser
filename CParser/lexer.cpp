@@ -41,37 +41,37 @@ int ptr;        //字符指针，指向当前读取的字符
  * 界符类别编码为i+100，其中i为Bound序列中界符对应的下标，如"("的类别编码为100，以此类推
  */
 
-bool lexical_analysis::set_input(string s) {
+bool Lexer::set_input(string s) {
 	input_filename = s;
 	return true;
 }
-bool lexical_analysis::set_result(string s) {
+bool Lexer::set_result(string s) {
 	result_filename = s;
 	return true;
 }
-bool lexical_analysis::set_statistics(string s) {
+bool Lexer::set_statistics(string s) {
 	statistics_filename = s;
 	return true;
 }
-bool lexical_analysis::set_table(string s) {
+bool Lexer::set_table(string s) {
 	table_filename = s;
 	return true;
 }
-bool lexical_analysis::set_errors(string s) {
+bool Lexer::set_errors(string s) {
 	errors_filename = s;
 	return true;
 }
 
-vector<Table>* lexical_analysis::get_table()
+vector<Token>* Lexer::get_table()
 {
 	return &table;
 }
-Statistics* lexical_analysis::get_sta()
+Statistics* Lexer::get_sta()
 {
 	return &sta;
 }
 
-int lexical_analysis::start_analysis()
+int Lexer::start_analysis()
 {
 	int ret = 0;
 	Id.clear();
@@ -125,13 +125,13 @@ int lexical_analysis::start_analysis()
 					category = is_keyword(token); //判断token是否为保留字
 					if (category != -1)          //如果是保留字
 					{
-						table.push_back(Table(category, 0));
+						table.push_back(Token(category, 0));
 						sta.add_key();
 					}
 					else
 					{
 						value = insert_id();
-						table.push_back(Table(1, Id[value], value)); //将识别到的标识符添加到table中
+						table.push_back(Token(1, Id[value], value)); //将识别到的标识符添加到table中
 						sta.add_id();
 					}
 
@@ -178,7 +178,7 @@ int lexical_analysis::start_analysis()
 					{
 						sta.add_num();
 						value = insert_num();
-						table.push_back(Table(2, Number[value], value));
+						table.push_back(Token(2, Number[value], value));
 						retract();      //回退
 					}
 					else
@@ -244,7 +244,7 @@ int lexical_analysis::start_analysis()
 							category = get_op(chtemp);
 						retract();
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Token(category, 0));
 						token = "";
 						state = 0;
 						break;
@@ -262,7 +262,7 @@ int lexical_analysis::start_analysis()
 							category = get_op(chtemp);
 						retract();
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Token(category, 0));
 						token = "";
 						state = 0;
 						break;
@@ -280,7 +280,7 @@ int lexical_analysis::start_analysis()
 							category = get_op(chtemp);
 						retract();
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Token(category, 0));
 						token = "";
 						state = 0;
 						break;
@@ -298,7 +298,7 @@ int lexical_analysis::start_analysis()
 							category = get_op(chtemp);
 						retract();
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Token(category, 0));
 						token = "";
 						state = 0;
 						break;
@@ -316,7 +316,7 @@ int lexical_analysis::start_analysis()
 							category = get_op(chtemp);
 						retract();
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Token(category, 0));
 						token = "";
 						state = 0;
 						break;
@@ -334,7 +334,7 @@ int lexical_analysis::start_analysis()
 							category = get_op(chtemp);
 						retract();
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Token(category, 0));
 						token = "";
 						state = 0;
 						break;
@@ -352,7 +352,7 @@ int lexical_analysis::start_analysis()
 							category = get_op(chtemp);
 						retract();
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Token(category, 0));
 						token = "";
 						state = 0;
 						break;
@@ -370,7 +370,7 @@ int lexical_analysis::start_analysis()
 							category = get_op(chtemp);
 						retract();
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Token(category, 0));
 						token = "";
 						state = 0;
 						break;
@@ -388,7 +388,7 @@ int lexical_analysis::start_analysis()
 							category = get_op(chtemp);
 						retract();
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Token(category, 0));
 						token = "";
 						state = 0;
 						break;
@@ -406,7 +406,7 @@ int lexical_analysis::start_analysis()
 							category = get_op(chtemp);
 						retract();
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Token(category, 0));
 						token = "";
 						state = 0;
 						break;
@@ -424,7 +424,7 @@ int lexical_analysis::start_analysis()
 							category = get_op(chtemp);
 						retract();
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Token(category, 0));
 						token = "";
 						state = 0;
 						break;
@@ -442,7 +442,7 @@ int lexical_analysis::start_analysis()
 							category = get_op(chtemp);
 						retract();
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Token(category, 0));
 						token = "";
 						state = 0;
 						break;
@@ -450,14 +450,14 @@ int lexical_analysis::start_analysis()
 					case '~':
 						category = get_op(chtemp);
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Token(category, 0));
 						token = "";
 						break;
 
 					case '.':
 						category = get_op(chtemp);
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Token(category, 0));
 						token = "";
 						state = 0;
 						break;
@@ -475,7 +475,7 @@ int lexical_analysis::start_analysis()
 					sta.add_ch();
 					sta.add_bound();
 					category = get_bound(token);
-					table.push_back(Table(category, 0));
+					table.push_back(Token(category, 0));
 					token = "";
 					state = 0;
 				}
@@ -497,7 +497,7 @@ int lexical_analysis::start_analysis()
 	return ret;
 }
 
-int lexical_analysis::output_analysis()
+int Lexer::output_analysis()
 {
 	ofstream outfile_statistics;
 	outfile_statistics.open(statistics_filename, ios::out);
@@ -521,7 +521,7 @@ int lexical_analysis::output_analysis()
 	return 0;
 }
 
-void lexical_analysis::show_statistics(ofstream& outfile)
+void Lexer::show_statistics(ofstream& outfile)
 {
 	outfile << "----------------------------------统计结果----------------------------------" << endl << endl
 		<< "语句行数 : " << sta.get_row() << endl
@@ -533,7 +533,7 @@ void lexical_analysis::show_statistics(ofstream& outfile)
 		<< "常数 : " << sta.get_num() << endl;
 }
 
-void lexical_analysis::show_result(ofstream& outfile)
+void Lexer::show_result(ofstream& outfile)
 {
 
 	outfile << "---------------------------------识别结果---------------------------------" << endl;
@@ -541,13 +541,13 @@ void lexical_analysis::show_result(ofstream& outfile)
 
 	for (int i = 0; i < int(table.size()); i++)
 	{
-		outfile << table[i].category << "\t\t" << table[i].value << endl;
+		outfile << table[i].symbol << "\t\t" << table[i].value << endl;
 	}
 
 	outfile.close();
 }
 
-void lexical_analysis::show_table(ofstream& outfile)
+void Lexer::show_table(ofstream& outfile)
 {
 
 	outfile << "----------------------------------" << "符号－编码对照表" << "----------------------------------" << endl << endl;

@@ -9,6 +9,7 @@
 #include <queue>
 
 #include "include/parser.h"
+#include "include/Symbol.h"
 
 using namespace std;
 
