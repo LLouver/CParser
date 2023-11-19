@@ -4,7 +4,7 @@
 #include <regex>
 #include <set>
 
-#include "include/tag.h"
+#include "include/Symbol.h"
 #include "include/lexer.h"
 
 using namespace std;
@@ -84,7 +84,7 @@ State Lexer::getNextLexical(Token& next_token)
 	next_token.value = "null";	//默认值,占位用
 	char ch;
 	if (!getNextChar(ch)) {
-		next_token.tag = Tag::the_end;
+		next_token.symbol = Symbol::the_end;
 		next_token.line = this->line;
         next_token.col = this->col;
 		return State::END_OF_FILE;
@@ -104,11 +104,11 @@ State Lexer::getNextLexical(Token& next_token)
 				buffer += ch;
 		}
 		if (KEYWORD_STR2TAG.count(buffer)) {
-			next_token.tag = KEYWORD_STR2TAG.at(buffer);
+			next_token.symbol = KEYWORD_STR2TAG.at(buffer);
 			next_token.value = buffer;
 		}
 		else {
-			next_token.tag = Tag::id;
+			next_token.symbol = Symbol::id;
 			next_token.value = buffer;
 		}
 	}
@@ -130,7 +130,7 @@ State Lexer::getNextLexical(Token& next_token)
 		}
 		if (!regex_match(buffer, reg))
 			return State::ERROR;
-		next_token.tag = Tag::num;
+		next_token.symbol = Symbol::num;
 		next_token.value = buffer;
 	}
 	else {
@@ -146,7 +146,7 @@ State Lexer::getNextLexical(Token& next_token)
 			case ')':
 			case '{':
 			case '}':
-				next_token.tag = convStr2Tag(string("") + ch);
+				next_token.symbol = convStr2Tag(string("") + ch);
 				break;
 			case '/':
 				if (this->peek == '/') {
@@ -154,7 +154,7 @@ State Lexer::getNextLexical(Token& next_token)
 					while (getNextChar(ch, false) && ch != '\n')
 						;
 					if (ch != '\n') {
-						next_token.tag = Tag::the_end;
+						next_token.symbol = Symbol::the_end;
 						return State::END_OF_FILE;
 					}
 					else
@@ -177,37 +177,37 @@ State Lexer::getNextLexical(Token& next_token)
 					}
 				}
 				//一个简单的/号
-				next_token.tag = Tag::sb_divide;
+				next_token.symbol = Symbol::sb_divide;
 				break;
 			case '=':
 				if (this->peek == '=') {
 					getNextChar(ch);	//去掉=
-					next_token.tag = Tag::sb_equal;
+					next_token.symbol = Symbol::sb_equal;
 				}
 				else
-					next_token.tag = Tag::sb_assign;
+					next_token.symbol = Symbol::sb_assign;
 				break;
 			case '>':
 				if (this->peek == '=') {
 					getNextChar(ch);	//去掉=
-					next_token.tag = Tag::sb_ge;
+					next_token.symbol = Symbol::sb_ge;
 				}
 				else
-					next_token.tag = Tag::sb_g;
+					next_token.symbol = Symbol::sb_g;
 				break;
 			case '<':
 				if (this->peek == '=') {
 					getNextChar(ch);	//去掉=
-					next_token.tag = Tag::sb_le;
+					next_token.symbol = Symbol::sb_le;
 				}
 				else
-					next_token.tag = Tag::sb_l;
+					next_token.symbol = Symbol::sb_l;
 				break;
 			case '!':
 				//以后需要扩展!运算符
 				if (this->peek == '=') {
 					getNextChar(ch);	//跳过=
-					next_token.tag = Tag::sb_ne;
+					next_token.symbol = Symbol::sb_ne;
 				}
 				else
 					return State::ERROR;
@@ -239,7 +239,7 @@ State Lexer::scanFile(const char* file_out_path)
 			old_line = this->line;
 		}
 #ifdef DEBUG
-		file_out << TAG2STR.at(t.tag) << ' ' << t.value << '\t';
+		file_out << TAG2STR.at(t.symbol) << ' ' << t.value << '\t';
 #else
 		file_out << (int)(t.tag) << ' ' << t.value << '\t';
 #endif

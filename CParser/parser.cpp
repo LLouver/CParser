@@ -51,27 +51,26 @@ LR1_Parser::~LR1_Parser()
 {
 }
 
-State LR1_Parser::openGrammarFile(const char* filepath)	//读入文法产生式
+State LR1_Parser::readProductionsFile(ifstream& in)	//读入文法产生式
 {
-	ifstream in(filepath, ios::in);
 	if (!in.is_open())
 		return State::ERROR;
 
-	grammar_list.push_back({ Tag::S0,{} });
+	productions_list.push_back({ Symbol::S0,{} });
 	char buffer[1024];
 	string temp;
 	try {
 		while (in.getline(buffer, 1024, '\n')) {
 			istringstream ss(buffer);
-			Grammar new_grammar;
+			Production new_grammar;
 			ss >> temp;
 			new_grammar.left = convStr2Tag(temp);
 			ss >> temp;
 			while (ss >> temp)
 				new_grammar.right.push_back(convStr2Tag(temp));
-			grammar_list.push_back(new_grammar);
+			productions_list.push_back(new_grammar);
 		}
-		grammar_list[0].right.push_back(grammar_list[1].left);	//构造拓广文法
+		productions_list[0].right.push_back(productions_list[1].left);	//构造拓广文法
 	}
 	catch (const std::exception& e) {
 		return State::ERROR;
@@ -79,27 +78,36 @@ State LR1_Parser::openGrammarFile(const char* filepath)	//读入文法产生式
 	return State::OK;
 }
 
-State LR1_Parser::init(const char* filepath)
+State LR1_Parser::init(ifstream& grammar_productions_file)
 {
-	if (openGrammarFile(filepath) != State::OK)
+	if (readProductionsFile(grammar_productions_file) != State::OK)
+	{
+		std::cerr<<"grammar_productions_file read failed!"<<endl; 
 		return State::ERROR;
+	}
 	initFirstList();
 	return initActionGotoMap();
 }
 
+State LR1_Parser::lex(ifstream& source_file)
+{
+	if (!this->lexer.openFile(src_path))
+		return State::ERROR;
+}
+
 void LR1_Parser::initFirstList()
 {
-	for (int i = int(Tag::epsilon); isVT(Tag(i)); ++i)
-		first_list[Tag(i)] = { Tag(i) };	//终结符First集为自身
+	for (int i = int(Symbol::epsilon); isVT(Symbol(i)); ++i)
+		first_list[Symbol(i)] = { Symbol(i) };	//终结符First集为自身
 
 	vector<int> grammar_pointer;	//记录产生式右部第一个符号为非终结符的文法
-	for (int i = 0; i < grammar_list.size(); i++) {
-		if (grammar_list[i].right.size() == 0)
-			first_list[grammar_list[i].left].insert(Tag::epsilon);
+	for (int i = 0; i < productions_list.size(); i++) {
+		if (productions_list[i].right.size() == 0)
+			first_list[productions_list[i].left].insert(Symbol::epsilon);
 		else {
-			auto first_elem = grammar_list[i].right.front();
+			auto first_elem = productions_list[i].right.front();
 			if (isVT(first_elem))
-				first_list[grammar_list[i].left].insert(first_elem);
+				first_list[productions_list[i].left].insert(first_elem);
 			else
 				grammar_pointer.emplace_back(i);
 		}
@@ -110,25 +118,25 @@ void LR1_Parser::initFirstList()
 		flag = false;
 		for (const auto& i : grammar_pointer) {
 			bool have_epsilon = false;
-			for (const auto& elem_A : grammar_list[i].right) {
+			for (const auto& elem_A : productions_list[i].right) {
 				have_epsilon = false;
 				if (isVN(elem_A)) {
 					//考虑A->A..的特殊情况
-					if (grammar_list[i].left == elem_A) {
-						if (first_list[elem_A].count(Tag::epsilon))
+					if (productions_list[i].left == elem_A) {
+						if (first_list[elem_A].count(Symbol::epsilon))
 							continue;
 						else
 							break;
 					}
 					//若出现A->B...,则将B的first集全部加到A中
 					for (const auto& elem_B : first_list[elem_A]) {
-						if (elem_B == Tag::epsilon) {
+						if (elem_B == Symbol::epsilon) {
 							have_epsilon = true;
 							continue;	//epsilon不加入
 						}
-						int before = first_list[grammar_list[i].left].size();
-						first_list[grammar_list[i].left].insert(elem_B);
-						int after = first_list[grammar_list[i].left].size();
+						int before = first_list[productions_list[i].left].size();
+						first_list[productions_list[i].left].insert(elem_B);
+						int after = first_list[productions_list[i].left].size();
 						if (before < after)
 							flag = true;
 					}
@@ -139,7 +147,7 @@ void LR1_Parser::initFirstList()
 					break;
 			}
 			if (have_epsilon)	//如果产生式最后一个符号也含空,则将空加入First集
-				first_list[grammar_list[i].left].insert(Tag::epsilon);
+				first_list[productions_list[i].left].insert(Symbol::epsilon);
 		}
 		if (!flag)	//如果first集不再增加,则返回
 			break;
@@ -156,15 +164,15 @@ set<GrammarProject> LR1_Parser::getClosure(const set<GrammarProject>& project_se
 	while (true) {
 		flag = false;
 		for (const auto& i : old_project) {	//扫描上一次产生的所有项目
-			if (grammar_list[i.p_grammar].right.size() > i.point && isVN(grammar_list[i.p_grammar].right[i.point])) {
+			if (productions_list[i.id_production].right.size() > i.point && isVN(productions_list[i.id_production].right[i.point])) {
 				//A->α.Bβ型
-				Tag vn = grammar_list[i.p_grammar].right[i.point];
+				Symbol vn = productions_list[i.id_production].right[i.point];
 
 				//求出first(βa)
-				set<Tag> firstba;
-				if (i.point + 1 < grammar_list[i.p_grammar].right.size()) {
-					firstba = first_list[grammar_list[i.p_grammar].right[i.point + 1]];
-					auto p = firstba.find(Tag::epsilon);
+				set<Symbol> firstba;
+				if (i.point + 1 < productions_list[i.id_production].right.size()) {
+					firstba = first_list[productions_list[i.id_production].right[i.point + 1]];
+					auto p = firstba.find(Symbol::epsilon);
 					if (p != firstba.cend()) {
 						//如果含有epsilon,则删除epsilon并把原项目的follows加入
 						firstba.erase(p);
@@ -177,13 +185,13 @@ set<GrammarProject> LR1_Parser::getClosure(const set<GrammarProject>& project_se
 						firstba.insert(follow);
 				}
 
-				for (int gp = 0; gp < grammar_list.size(); gp++) {
+				for (int gp = 0; gp < productions_list.size(); gp++) {
 					//扫描所有B->γ型的产生式
-					if (grammar_list[gp].left == vn) {
+					if (productions_list[gp].left == vn) {
 						//若CLOSURE中不存在{B->γ,firstba},则加入
 						bool have = false;
 						for (auto it = ret.begin(); it != ret.end(); ++it) {
-							if (it->p_grammar == gp && it->point == 0) {
+							if (it->id_production == gp && it->point == 0) {
 								//项目在集合
 								have = true;
 								if (it->follows != firstba) {
@@ -191,7 +199,7 @@ set<GrammarProject> LR1_Parser::getClosure(const set<GrammarProject>& project_se
 									flag = true;
 									//由于集合元素的值无法修改,故只能覆盖之
 									auto ngp = *it;
-									for (Tag firstba_elem : firstba)
+									for (Symbol firstba_elem : firstba)
 										ngp.follows.insert(firstba_elem);
 									ret.erase(it);
 									ret.insert(ngp);
@@ -245,29 +253,29 @@ State LR1_Parser::initActionGotoMap()
 {
 	project_set_list.clear();
 	//初始状态为CLOSURE({S0->.program,#})
-	project_set_list.emplace_back(getClosure({ { 0,0,{Tag::the_end} } }));
+	project_set_list.emplace_back(getClosure({ { 0,0,{Symbol::the_end} } }));
 
 	int new_index = 0;		//新项目集下标
 	while (new_index < project_set_list.size()) {
 		set<GrammarProject>& pset_now = project_set_list[new_index];
-		map<Tag, set<GrammarProject>> new_pset_map;		//当前项目集可以产生的新项目集
+		map<Symbol, set<GrammarProject>> new_pset_map;		//当前项目集可以产生的新项目集
 
 		//扫描所有项目
 		for (const auto& i : pset_now) {
-			if (i.point < grammar_list[i.p_grammar].right.size()) {
+			if (i.point < productions_list[i.id_production].right.size()) {
 				//不是归约项目
-				new_pset_map[grammar_list[i.p_grammar].right[i.point]].insert({ i.p_grammar,i.point + 1,i.follows });
+				new_pset_map[productions_list[i.id_production].right[i.point]].insert({ i.id_production,i.point + 1,i.follows });
 			}
 			else {
 				//是归约项目
-				if (i.p_grammar == 0 && i.point == 1 && i.follows.size() == 1 && *i.follows.cbegin() == Tag::the_end)
-					action_go_map[new_index][Tag::the_end] = { Action::accept,i.p_grammar };	//可接受状态
+				if (i.id_production == 0 && i.point == 1 && i.follows.size() == 1 && *i.follows.cbegin() == Symbol::the_end)
+					action_go_map[new_index][Symbol::the_end] = { ActionType::accept,i.id_production };	//可接受状态
 				else {
 					for (const auto& follow : i.follows) {
 						if (action_go_map[new_index].count(follow))
 							return State::ERROR;	//如果转移表该项已经有动作,则产生多重入口,不是LR(1)文法,报错
 						else
-							action_go_map[new_index][follow] = { Action::reduction,i.p_grammar };	//用该产生式归约
+							action_go_map[new_index][follow] = { ActionType::reduction,i.id_production };	//用该产生式归约
 					}
 				}
 			}
@@ -279,10 +287,10 @@ State LR1_Parser::initActionGotoMap()
 			int it = findSameProjectSet(NS);				//查重
 			if (it == -1) {
 				project_set_list.emplace_back(NS);
-				action_go_map[new_index][i.first] = { Action::shift_in, int(project_set_list.size()) - 1 };	//移进
+				action_go_map[new_index][i.first] = { ActionType::shift_in, int(project_set_list.size()) - 1 };	//移进
 			}
 			else {
-				action_go_map[new_index][i.first] = { Action::shift_in, it };	//移进
+				action_go_map[new_index][i.first] = { ActionType::shift_in, it };	//移进
 			}
 		}
 
@@ -296,24 +304,23 @@ State LR1_Parser::initActionGotoMap()
 * parser里我直接调用了getNextLexical函数，但是lexer此时并没有为其指明文件路径file_in，可以在parser的构造函数里指明一下
 * 归约的时候可以构造语法树，这里先空了，等我们商量好再加进去，嘿
 **********************************************************************************************************************/
-State LR1_Parser::parser(const char* src_path, Token& err_token)
+State LR1_Parser::parse(Token& err_token)
 {
     err_token.line = err_token.col = 0;
-    if (!this->lexer.openFile(src_path))
-        return State::ERROR;
+    
 
     stack<int> SStack;	//状态栈
-    stack<Tag> TStack;	//输入栈
+    stack<Symbol> TStack;	//输入栈
     stack<int> NStack;  //树结点栈，存放树节点下标
 
     SStack.push(0);		//初始化
-    TStack.push(Tag::the_end);	//初始化
+    TStack.push(Symbol::the_end);	//初始化
     //NStack.push(-1);			//初始化
 
     bool use_lastToken = false;	//判断是否使用上次的token
     Token t_now;	//当前token
     int s_now;		//当前state
-    Movement m_now;	//当前动作
+    Action m_now;	//当前动作
     while (true) {
         //需要新获取一个token
         if (!use_lastToken) {
@@ -322,30 +329,30 @@ State LR1_Parser::parser(const char* src_path, Token& err_token)
                 return ret;
         }
         s_now = SStack.top();						//获取当前状态
-        if (action_go_map.count(s_now) == 0 || action_go_map[s_now].count(t_now.tag) == 0) {
+        if (action_go_map.count(s_now) == 0 || action_go_map[s_now].count(t_now.symbol) == 0) {
             //若对应表格项为空,则出错
             err_token = t_now;
             return State::ERROR;
         }
-        m_now = action_go_map[s_now][t_now.tag];	//获取当前动作
+        m_now = action_go_map[s_now][t_now.symbol];	//获取当前动作
             //移进
-        if (m_now.action == Action::shift_in) {
+        if (m_now.action_type == ActionType::shift_in) {
             SStack.push(m_now.go);
-            TStack.push(t_now.tag);
+            TStack.push(t_now.symbol);
 
             TNode node_in;	//移进的树结点
-            node_in.tag = t_now.tag;	//初始化tag值
+            node_in.tag = t_now.symbol;	//初始化tag值
             node_in.p = pTree.TNode_List.size();	//指定树节点在TNode_List中的下标
             pTree.TNode_List.push_back(node_in);	//移进树结点
             NStack.push(node_in.p);					//将树节点下标移进树栈（保证栈内结点和TNode_List中的结点一一对应）
 
             use_lastToken = false;
         }	//归约
-        else if (m_now.action == Action::reduction) {
-            int len = grammar_list[m_now.go].right.size();	//产生式右部长度
+        else if (m_now.action_type == ActionType::reduction) {
+            int len = productions_list[m_now.go].right.size();	//产生式右部长度
 
             TNode node_left;								//产生式左部
-            node_left.tag = grammar_list[m_now.go].left;	//产生式左部tag
+            node_left.tag = productions_list[m_now.go].left;	//产生式左部tag
             node_left.p = pTree.TNode_List.size();			//移进树结点
 
             //移出栈
@@ -382,7 +389,7 @@ State LR1_Parser::parser(const char* src_path, Token& err_token)
         }
     }
 }
-
+/*
 void LR1_Parser::printTree(ostream& out)
 {
 	if (pTree.RootNode == -1)	//没有根节点，树都不存在，没得画咯
@@ -434,13 +441,13 @@ void LR1_Parser::printVP_DFA(ostream& out)
 		for (const auto& gp : project_set_list[i])
 		{
 			//输出产生式
-			out << convTag2Str(grammar_list[gp.p_grammar].left) << "->";
+			out << convTag2Str(productions_list[gp.id_production].left) << "->";
             int p;
-            for (p = 0; p < grammar_list[gp.p_grammar].right.size(); p++)
+            for (p = 0; p < productions_list[gp.id_production].right.size(); p++)
 			{
 				if (gp.point == p)
 					out << ".";
-				out << convTag2Str(grammar_list[gp.p_grammar].right[p]);
+				out << convTag2Str(productions_list[gp.id_production].right[p]);
 			}
             if (gp.point == p)
                 out << ".";
@@ -464,7 +471,7 @@ void LR1_Parser::printVP_DFA(ostream& out)
 		for (const auto& tag_mov : action_go_map[i])
 		{
 			//只有移进才会转移
-			if (tag_mov.second.action != Action::shift_in)
+			if (tag_mov.second.action_type != ActionType::shift_in)
 				continue;
 			else
 				out << "node_" << i << "->node_" << tag_mov.second.go << "[label=\"" << convTag2Str(tag_mov.first) << "\"];" << endl;
@@ -474,14 +481,14 @@ void LR1_Parser::printVP_DFA(ostream& out)
 	out << "}" << endl;
 	return;
 }
-
+*/
 void LR1_Parser::clear_all()
 {
     //清空树
     this->pTree.TNode_List.clear();
     this->pTree.RootNode = -1;
     //清空grammar_list、first_list等
-    this->grammar_list.clear();
+    this->productions_list.clear();
     this->first_list.clear();
     this->project_set_list.clear();
     this->action_go_map.clear();

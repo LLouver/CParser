@@ -8,8 +8,8 @@
 using std::string;
 using std::map;
 
-//语法单元的类型
-enum class Tag
+//文法符号
+enum class Symbol
 {
 	//终结符
 	epsilon = 0,	//空
@@ -86,30 +86,30 @@ enum class Tag
 };
 
 //关键字表,将关键字字符串转换为对应的Tag
-extern const std::map<std::string, Tag> KEYWORD_STR2TAG;
+extern const std::map<std::string, Symbol> KEYWORD_STR2TAG;
 //将字符串转换为相应的Tag,用于读入文法产生式
-extern const std::map<std::string, Tag> STR2TAG;
+extern const std::map<std::string, Symbol> STR2TAG;
 #ifdef DEBUG
 //返回Tag枚举值对应的字符串表示,便于调试
-extern const std::map<Tag, std::string> TAG2STR;
+extern const std::map<Symbol, std::string> TAG2STR;
 #endif // DEBUG
 
 
-inline bool isVT(const Tag t)	//判断Tag是否为终结符
+inline bool isVT(const Symbol t)	//判断Tag是否为终结符
 {
-	return t < Tag::vtnboundary;
+	return t < Symbol::vtnboundary;
 }
-inline bool isVN(const Tag t)
+inline bool isVN(const Symbol t)
 {
-	return t > Tag::vtnboundary;
+	return t > Symbol::vtnboundary;
 }
 
-inline Tag convStr2Tag(const string& s)
+inline Symbol convStr2Tag(const string& s)
 {
 	return STR2TAG.at(s);
 }
 
-inline string convTag2Str(const Tag& t)
+inline string convTag2Str(const Symbol& t)
 {
 	return TAG2STR.at(t);
 }

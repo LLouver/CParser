@@ -1,7 +1,7 @@
 #ifndef LEXER_H
 #define LEXER_H
 
-#include "tag.h"
+#include "Symbol.h"
 #include <string>
 #include <fstream>
 
@@ -10,7 +10,7 @@ using std::ifstream;
 
 struct Token	//词法单元,由类型和属性值构成
 {
-	Tag tag;		//词法单元类型
+	Symbol symbol;		//词法单元类型
 	int line;		//记录出错位置
 	int col;
 	string value;	//属性值,空值用null表示,全部用str存储,需要时使用sstream解析

@@ -154,17 +154,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="CParser.cpp" />
+    <ClCompile Include="compiler.cpp" />
+    <ClCompile Include="CCompiler.cpp" />
     <ClCompile Include="lexer.cpp" />
-    <ClCompile Include="main.cpp" />
     <ClCompile Include="parser.cpp" />
-    <ClCompile Include="tag.cpp" />
+    <ClCompile Include="Symbol.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\common.h" />
+    <ClInclude Include="include\compiler.h" />
     <ClInclude Include="include\lexer.h" />
     <ClInclude Include="include\parser.h" />
-    <ClInclude Include="include\tag.h" />
+    <ClInclude Include="include\Symbol.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

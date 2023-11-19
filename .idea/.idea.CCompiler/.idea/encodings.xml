@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding" addBOMForNewFiles="with BOM under Windows, with no BOM otherwise">
+    <file url="file://$PROJECT_DIR$/CParser/include/Symbol.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/CParser/include/common.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/CParser/include/lexer.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/CParser/include/parser.h" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/CParser/include/tag.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/CParser/lexer.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/CParser/parser.cpp" charset="UTF-8" />
   </component>
