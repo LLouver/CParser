@@ -4,12 +4,18 @@
     <projectFile>CParser/CParser.vcxproj</projectFile>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c6da364c-4816-4542-a68a-7072e9a4a44a" name="Changes" comment="完成compiler项目">
+    <list default="true" id="c6da364c-4816-4542-a68a-7072e9a4a44a" name="Changes" comment="修正include">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.CParser/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CParser/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CParser/CParser.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/CParser.vcxproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/CCompiler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/CCompiler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/include/lexer.h" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/include/lexer.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/include/lexer_tools.h" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/include/lexer_tools.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CParser/lexer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/lexer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CParser/lexer_tools.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/lexer_tools.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CParser/lexer_tools.h" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/include/lexer_tools.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/parser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/parser.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.command.1.tlog" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.command.1.tlog" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.read.1.tlog" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.read.1.tlog" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.write.1.tlog" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.write.1.tlog" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/x64/Debug/vc143.idb" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/x64/Debug/vc143.idb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/x64/Debug/vc143.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/x64/Debug/vc143.pdb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -103,7 +109,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1700373199439</updated>
-      <workItem from="1700373201017" duration="13939000" />
+      <workItem from="1700373201017" duration="18005000" />
     </task>
     <task id="LOCAL-00001" summary="basic">
       <created>1700380720619</created>
@@ -119,7 +125,14 @@
       <option name="project" value="LOCAL" />
       <updated>1700386765955</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="修正include">
+      <created>1700388639829</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1700388639829</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -131,6 +144,7 @@
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
     <MESSAGE value="basic" />
     <MESSAGE value="完成compiler项目" />
-    <option name="LAST_COMMIT_MESSAGE" value="完成compiler项目" />
+    <MESSAGE value="修正include" />
+    <option name="LAST_COMMIT_MESSAGE" value="修正include" />
   </component>
 </project>

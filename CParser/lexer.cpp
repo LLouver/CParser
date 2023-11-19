@@ -43,23 +43,23 @@ int count_col = 0;//当前字符串的起始字符位置（报错用）
  * 界符类别编码为i+100，其中i为Bound序列中界符对应的下标，如"("的类别编码为100，以此类推
  */
 
-bool lexical_analysis::set_input(string s) {
+bool Lexer::set_input(string s) {
 	input_filename = s;
 	return true;
 }
-bool lexical_analysis::set_result(string s) {
+bool Lexer::set_result(string s) {
 	result_filename = s;
 	return true;
 }
-bool lexical_analysis::set_statistics(string s) {
+bool Lexer::set_statistics(string s) {
 	statistics_filename = s;
 	return true;
 }
-bool lexical_analysis::set_table(string s) {
+bool Lexer::set_table(string s) {
 	table_filename = s;
 	return true;
 }
-bool lexical_analysis::set_errors(string s) {
+bool Lexer::set_errors(string s) {
 	errors_filename = s;
 	return true;
 }
@@ -82,7 +82,7 @@ int lexical_analysis::getNextLexical(Table& next)
 	return 0;
 }
 
-int lexical_analysis::start_analysis()
+int Lexer::start_analysis()
 {
 	int ret = 0;
 	Id.clear();
@@ -510,7 +510,7 @@ int lexical_analysis::start_analysis()
 	return ret;
 }
 
-int lexical_analysis::output_analysis()
+int Lexer::output_analysis()
 {
 	ofstream outfile_statistics;
 	outfile_statistics.open(statistics_filename, ios::out);
@@ -534,7 +534,7 @@ int lexical_analysis::output_analysis()
 	return 0;
 }
 
-void lexical_analysis::show_statistics(ofstream& outfile)
+void Lexer::show_statistics(ofstream& outfile)
 {
 	outfile << "----------------------------------统计结果----------------------------------" << endl << endl
 		<< "语句行数 : " << sta.get_row() << endl
@@ -546,7 +546,7 @@ void lexical_analysis::show_statistics(ofstream& outfile)
 		<< "常数 : " << sta.get_num() << endl;
 }
 
-void lexical_analysis::show_result(ofstream& outfile)
+void Lexer::show_result(ofstream& outfile)
 {
 
 	outfile << "---------------------------------识别结果---------------------------------" << endl;
@@ -554,13 +554,13 @@ void lexical_analysis::show_result(ofstream& outfile)
 
 	for (int i = 0; i < int(table.size()); i++)
 	{
-		outfile << table[i].category << "\t\t" << table[i].value << endl;
+		outfile << table[i].symbol << "\t\t" << table[i].value << endl;
 	}
 
 	outfile.close();
 }
 
-void lexical_analysis::show_table(ofstream& outfile)
+void Lexer::show_table(ofstream& outfile)
 {
 
 	outfile << "----------------------------------" << "符号－编码对照表" << "----------------------------------" << endl << endl;

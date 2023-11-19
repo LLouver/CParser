@@ -11,18 +11,18 @@
 
 using namespace std;
 
-struct  Table       //符号表
+struct Token       //符号表
 {
-	int category = 0;       //类别编码
+	int symbol = 0;       //类别编码
 	int index = 0;          //表中位置
 	string value = "-";             //属性值(标识符，常数的属性是其本身，其他三类符号唯一)
 
-	int row;                //行
+	int line;                //行
 	int col;                //列
 
 	Table(int c, int i, int r, int co, string v = "-")
 	{
-		category = c;
+		symbol = c;
 		index = i;
 		value = v;
 		row = r;
@@ -101,7 +101,7 @@ public:
 };
 
 
-class lexical_analysis {
+class Lexer {
 private:
 	string input_filename;//输入文件路径
 	string result_filename;//具体结果输出文件路径
@@ -109,7 +109,7 @@ private:
 	string table_filename;//记号表输出文件路径
 	string errors_filename;//错误记录输出文件路径
 
-	vector<Table> table;        //存储所有识别到的合法符号(串)
+	vector<Token> table;        //存储所有识别到的合法符号(串)
 	Statistics sta;             //存储统计数据
 
 	int count;     //已经返回到了哪个table
@@ -118,7 +118,7 @@ private:
 	void show_result(ofstream& outfile);          //输出识别结果
 	void show_table(ofstream& outfile);           //输出记号表
 public:
-	lexical_analysis()
+	Lexer()
 	{
 		count = 0;
 	}
@@ -143,7 +143,7 @@ public:
 	3：记号表输出文件打开失败
 	*/
 
-	int getNextLexical(Table& next);
+	int getNextLexical(Token& next);
 	/*
 	0：读取成功
 	1：返回失败（越界）
