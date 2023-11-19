@@ -96,7 +96,7 @@ enum class Symbol
 	sb_semicolon,
 	sb_comma,
 	sb_colon,
-	sb_semicolon,
+	sb_question,
 	sb_double_quotation,
 	sb_single_quotation,
 	sb_pound,
