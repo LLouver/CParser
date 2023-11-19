@@ -64,15 +64,15 @@ bool Lexer::set_errors(string s) {
 	return true;
 }
 
-/*vector<Table>* lexical_analysis::get_table()
+/*vector<Table>* Lexer::get_table()
 {
 	return &table;
 }*/
-Statistics lexical_analysis::get_sta()
+Statistics Lexer::get_sta()
 {
 	return sta;
 }
-int lexical_analysis::getNextLexical(Table& next)
+int Lexer::getNextLexical(Token& next)
 {
 	if (count >= table.size())
 		return 1;

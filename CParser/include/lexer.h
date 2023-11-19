@@ -20,12 +20,12 @@ struct Token       //符号表
 	int line;                //行
 	int col;                //列
 
-	Table(int c, int i, int r, int co, string v = "-")
+	Token(int c, int i, int r, int co, string v = "-")
 	{
 		symbol = c;
 		index = i;
 		value = v;
-		row = r;
+		line = r;
 		col = co;
 	}
 };
@@ -34,16 +34,16 @@ class Statistics
 {
 private:
 	int ch;         //字符总数(只统计非空且有意义的字符)
-	int row;        //行数
+	int line;        //行数
 	int id, num, key, op, bound;    //各类单词的个数
 public:
 	Statistics()
 	{
-		ch = row = id = num = key = op = bound = 0;
+		ch = line = id = num = key = op = bound = 0;
 	}
 	void add_row()
 	{
-		row++;
+		line++;
 	}
 	void add_ch()
 	{
@@ -72,7 +72,7 @@ public:
 
 	int get_row()
 	{
-		return row;
+		return line;
 	}
 	int get_ch()
 	{
