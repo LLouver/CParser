@@ -4,12 +4,13 @@
 int main(int argc, char* argv[])
 {
     //中文
-    /*Compiler compiler;
+    Compiler compiler;
     compiler.init();
     if(compiler.compile()==State::OK)
     {
         compiler.output();
-    }*/
+    }
+    /*
     Lexer txysb;
     txysb.set_input("./test2.c");
     txysb.set_result("./result.txt");
@@ -21,7 +22,7 @@ int main(int argc, char* argv[])
     Token token;
     while(!txysb.getNextLexical(token))
     {
-        printf("symbol%d at line %d,col %d\n" , token.symbol,token.line,token.col);
-    }
+        printf("symbol%d at line %d,col %d\n" , token.symbol_id,token.line,token.col);
+    }*/
     return 0;
 }

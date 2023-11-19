@@ -8,6 +8,8 @@
 
 #include "include/common.h"
 #include "include/lexer.h"
+#include "include/symbol.h"
+
 
 using std::vector;
 using std::set;

@@ -7,8 +7,8 @@ extern int ptr;
 extern string buffer;
 extern string token;
 extern int state;
-extern map<string, int> Id;    //±êÊ¶·û¼¯
-extern map<string, int> Number;     //³£Êı¼¯
+extern map<string, int> Id;    //æ ‡è¯†ç¬¦é›†
+extern map<string, int> Number;     //å¸¸æ•°é›†
 
 extern const vector<string> Keyword;
 extern const vector<string> Operator;
@@ -16,27 +16,27 @@ extern const vector<char> Bound;
 
 using namespace std;
 
-bool is_letter(char ch);  //ÅĞ¶ÏÊÇ·ñÎª×ÖÄ¸
+bool is_letter(char ch);  //åˆ¤æ–­æ˜¯å¦ä¸ºå­—æ¯
 
-bool is_digit(char ch);   //ÅĞ¶ÏÊÇ·ñÎªÊı×Ö
+bool is_digit(char ch);   //åˆ¤æ–­æ˜¯å¦ä¸ºæ•°å­—
 
-int is_keyword(string str);  //ÅĞ¶ÏÊÇ·ñÊÇ£ÃÓïÑÔ±£Áô×Ö
+int is_keyword(string str);  //åˆ¤æ–­æ˜¯å¦æ˜¯ï¼£è¯­è¨€ä¿ç•™å­—
 
-bool is_operator(char ch);   //ÅĞ¶ÏÊÇ·ñÎªÔËËã·û
+bool is_operator(char ch);   //åˆ¤æ–­æ˜¯å¦ä¸ºè¿ç®—ç¬¦
 
-bool is_bound(char ch);      //ÅĞ¶ÏÊÇ·ñÎª½ç·û
+bool is_bound(char ch);      //åˆ¤æ–­æ˜¯å¦ä¸ºç•Œç¬¦
 
 int get_op(string str);
-int get_op(char ch);          //»ñµÃÔËËã·ûÀà±ğ±àÂë
+int get_op(char ch);          //è·å¾—è¿ç®—ç¬¦ç±»åˆ«ç¼–ç 
 
-int get_bound(string str);      //»ñµÃ½ç·ûÀà±ğ±àÂë
+int get_bound(string str);      //è·å¾—ç•Œç¬¦ç±»åˆ«ç¼–ç 
 
-void get_char();        //Ã¿µ÷ÓÃÒ»´Î£¬ÏòÇ°Ö¸Õëforward´ÓbufferÖĞ¶ÁÈ¡Ò»¸ö×Ö·û£¬²¢°ÑËü·Åµ½characterÖĞ£¬È»ºóÒÆ¶¯forward£¬Ö¸ÏòÏÂÒ»¸ö×Ö·û
-void get_nbc();         //Ã¿´Îµ÷ÓÃÊ±¼ì²écharacterÊÇ·ñÎª¿Õ¸ñ£¬ÈôÊÇÔò·´¸´µ÷ÓÃget_char()£¬Ö±µ½characterÊÇÒ»¸ö·Ç¿Õ×Ö·ûÎ»ÖÃ
-void retract();         //ÏòÇ°Ö¸ÕëºóÍËÒ»¸ö×Ö·û
+void get_char();        //æ¯è°ƒç”¨ä¸€æ¬¡ï¼Œå‘å‰æŒ‡é’ˆforwardä»bufferä¸­è¯»å–ä¸€ä¸ªå­—ç¬¦ï¼Œå¹¶æŠŠå®ƒæ”¾åˆ°characterä¸­ï¼Œç„¶åç§»åŠ¨forwardï¼ŒæŒ‡å‘ä¸‹ä¸€ä¸ªå­—ç¬¦
+void get_nbc();         //æ¯æ¬¡è°ƒç”¨æ—¶æ£€æŸ¥characteræ˜¯å¦ä¸ºç©ºæ ¼ï¼Œè‹¥æ˜¯åˆ™åå¤è°ƒç”¨get_char()ï¼Œç›´åˆ°characteræ˜¯ä¸€ä¸ªéç©ºå­—ç¬¦ä½ç½®
+void retract();         //å‘å‰æŒ‡é’ˆåé€€ä¸€ä¸ªå­—ç¬¦
 
-string insert_id();        //²éÕÒ±êÊ¶·û±í£¬Ìí¼ÓĞÂÏî
-string insert_num();            //²éÕÒ³£Êı±í£¬Ìí¼ÓĞÂÏî
+string insert_id();        //æŸ¥æ‰¾æ ‡è¯†ç¬¦è¡¨ï¼Œæ·»åŠ æ–°é¡¹
+string insert_num();            //æŸ¥æ‰¾å¸¸æ•°è¡¨ï¼Œæ·»åŠ æ–°é¡¹
 
 
 #endif // !LEXER_TOOLS_H

@@ -9,11 +9,13 @@
 #include <fstream>
 #include <map>
 
+#include "Symbol.h"
+
 using namespace std;
 
 struct Token       //符号表
 {
-	int symbol = 0;       //类别编码
+	Symbol symbol_id = static_cast<Symbol>(0);       //类别编码
 	int index = 0;          //表中位置
 	string value = "-";             //属性值(标识符，常数的属性是其本身，其他三类符号唯一)
 
@@ -22,11 +24,19 @@ struct Token       //符号表
 
 	Token(int c, int i, int r, int co, string v = "-")
 	{
-		symbol = c;
+		symbol_id = static_cast<Symbol>(c);
 		index = i;
 		value = v;
 		line = r;
 		col = co;
+	}
+	Token()
+	{
+		symbol_id = static_cast<Symbol>(0);
+		index = 0;
+		value = "";
+		line = 0;
+		col = 0;
 	}
 };
 
@@ -122,13 +132,12 @@ public:
 	{
 		count = 0;
 	}
-	bool set_input(string s);
 	bool set_result(string s);
 	bool set_statistics(string s);
 	bool set_table(string s);
 	bool set_errors(string s);
 
-	int start_analysis();
+	int start_analysis(ifstream& source_file);
 	/*
 	0：正常运行
 	1：输入文件打开失败

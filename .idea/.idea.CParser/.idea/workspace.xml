@@ -4,16 +4,18 @@
     <projectFile>CParser/CParser.vcxproj</projectFile>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c6da364c-4816-4542-a68a-7072e9a4a44a" name="Changes" comment="修正include">
+    <list default="true" id="c6da364c-4816-4542-a68a-7072e9a4a44a" name="Changes" comment="修bug">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.CParser/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CParser/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CParser/CCompiler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/CCompiler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CParser/include/lexer.h" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/include/lexer.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/CParser.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/CParser.vcxproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/Symbol.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/symbol.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/include/Symbol.h" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/include/symbol.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/include/lexer.h" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/include/Lexer.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CParser/include/lexer_tools.h" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/include/lexer_tools.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/include/parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/include/parser.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CParser/lexer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/lexer.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CParser/parser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/parser.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.command.1.tlog" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.command.1.tlog" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.read.1.tlog" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.read.1.tlog" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.write.1.tlog" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.write.1.tlog" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CParser/x64/Debug/vc143.idb" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/x64/Debug/vc143.idb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CParser/x64/Debug/vc143.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/x64/Debug/vc143.pdb" afterDir="false" />
     </list>
@@ -24,7 +26,10 @@
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/../../../Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.31.31103/include/vector" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/User/Rider_workspace/CParser/CParser/CCompiler.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/CParser/main.cpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock://diff.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://diff.cpp" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -41,7 +46,7 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
-    "settings.editor.selected.configurable": "preferences.sourceCode.C++",
+    "settings.editor.selected.configurable": "SolutionBuilderGeneralOptionsPage",
     "settings.editor.splitter.proportion": "0.22505091",
     "vue.rearranger.settings.migration": "true"
   },
@@ -109,7 +114,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1700373199439</updated>
-      <workItem from="1700373201017" duration="18005000" />
+      <workItem from="1700373201017" duration="23439000" />
     </task>
     <task id="LOCAL-00001" summary="basic">
       <created>1700380720619</created>
@@ -132,7 +137,14 @@
       <option name="project" value="LOCAL" />
       <updated>1700388639829</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="修bug">
+      <created>1700394982298</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1700394982298</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -145,6 +157,7 @@
     <MESSAGE value="basic" />
     <MESSAGE value="完成compiler项目" />
     <MESSAGE value="修正include" />
-    <option name="LAST_COMMIT_MESSAGE" value="修正include" />
+    <MESSAGE value="修bug" />
+    <option name="LAST_COMMIT_MESSAGE" value="修bug" />
   </component>
 </project>

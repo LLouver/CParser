@@ -92,8 +92,7 @@ State LR1_Parser::init(ifstream& grammar_productions_file)
 
 State LR1_Parser::lex(ifstream& source_file)
 {
-	if (!this->lexer.openFile(src_path))
-		return State::ERROR;
+	return State::OK;
 }
 
 void LR1_Parser::initFirstList()
@@ -325,24 +324,24 @@ State LR1_Parser::parse(Token& err_token)
     while (true) {
         //需要新获取一个token
         if (!use_lastToken) {
-            State ret = this->lexer.getNextLexical(t_now);
+            State ret = (State)this->lexer.getNextLexical(t_now);
             if (ret == State::ERROR)
                 return ret;
         }
         s_now = SStack.top();						//获取当前状态
-        if (action_go_map.count(s_now) == 0 || action_go_map[s_now].count(t_now.symbol) == 0) {
+        if (action_go_map.count(s_now) == 0 || action_go_map[s_now].count(t_now.symbol_id) == 0) {
             //若对应表格项为空,则出错
             err_token = t_now;
             return State::ERROR;
         }
-        m_now = action_go_map[s_now][t_now.symbol];	//获取当前动作
+        m_now = action_go_map[s_now][t_now.symbol_id];	//获取当前动作
             //移进
         if (m_now.action_type == ActionType::shift_in) {
             SStack.push(m_now.go);
-            TStack.push(t_now.symbol);
+            TStack.push(t_now.symbol_id);
 
             TNode node_in;	//移进的树结点
-            node_in.tag = t_now.symbol;	//初始化tag值
+            node_in.tag = t_now.symbol_id;	//初始化tag值
             node_in.p = pTree.TNode_List.size();	//指定树节点在TNode_List中的下标
             pTree.TNode_List.push_back(node_in);	//移进树结点
             NStack.push(node_in.p);					//将树节点下标移进树栈（保证栈内结点和TNode_List中的结点一一对应）
@@ -494,7 +493,7 @@ void LR1_Parser::clear_all()
     this->project_set_list.clear();
     this->action_go_map.clear();
     //清空lexer的数据
-    this->lexer.clear_data();
+    // this->lexer.clear_data();
 }
 /*int main()
 {

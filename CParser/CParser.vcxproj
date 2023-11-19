@@ -159,7 +159,7 @@
     <ClCompile Include="lexer.cpp" />
     <ClCompile Include="lexer_tools.cpp" />
     <ClCompile Include="parser.cpp" />
-    <ClCompile Include="Symbol.cpp" />
+    <ClCompile Include="symbol.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\common.h" />
@@ -167,7 +167,7 @@
     <ClInclude Include="include\lexer.h" />
     <ClInclude Include="include\lexer_tools.h" />
     <ClInclude Include="include\parser.h" />
-    <ClInclude Include="include\Symbol.h" />
+    <ClInclude Include="include\symbol.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
