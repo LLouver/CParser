@@ -20,11 +20,13 @@ struct  Table       //符号表
 	int row;                //行
 	int col;                //列
 
-	Table(int c, int i, string v = "-")
+	Table(int c, int i, int r, int co, string v = "-")
 	{
 		category = c;
 		index = i;
 		value = v;
+		row = r;
+		col = co;
 	}
 };
 
@@ -110,7 +112,7 @@ private:
 	vector<Table> table;        //存储所有识别到的合法符号(串)
 	Statistics sta;             //存储统计数据
 
-	int count;
+	int count;     //已经返回到了哪个table
 
 	void show_statistics(ofstream& outfile);      //输出统计结果
 	void show_result(ofstream& outfile);          //输出识别结果
@@ -143,11 +145,10 @@ public:
 
 	int getNextLexical(Table& next);
 	/*
-	0：返回失败（越界）
-	1：读取成功
+	0：读取成功
+	1：返回失败（越界）
 	*/
-
-	vector<Table>* get_table();
-	Statistics* get_sta();
+	Statistics get_sta();
+	//vector<Table>* get_table();
 };
 #endif // !LEXER_H

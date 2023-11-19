@@ -31,6 +31,8 @@ char character;      //当前读到的字符
 string token;       //字符数组，存放当前正在识别的单词字符串
 int ptr;        //字符指针，指向当前读取的字符
 
+int count_col = 0;//当前字符串的起始字符位置（报错用）
+
 /*所有合法的符合(串)分为５类：标识符，常数，保留字，运算符，界符
  * 注释标记"//","/ *"，词法分析不需要处理这些(指内容被直接忽略)
  * 约定:　　(类别编码唯一)
@@ -62,13 +64,22 @@ bool lexical_analysis::set_errors(string s) {
 	return true;
 }
 
-vector<Table>* lexical_analysis::get_table()
+/*vector<Table>* lexical_analysis::get_table()
 {
 	return &table;
-}
-Statistics* lexical_analysis::get_sta()
+}*/
+Statistics lexical_analysis::get_sta()
 {
-	return &sta;
+	return sta;
+}
+int lexical_analysis::getNextLexical(Table& next)
+{
+	if (count >= table.size())
+		return 1;
+
+	next = table[count];
+	count++;
+	return 0;
 }
 
 int lexical_analysis::start_analysis()
@@ -106,6 +117,8 @@ int lexical_analysis::start_analysis()
 				if (character == '\0')
 					break;
 
+				count_col = ptr;    //记录首字符位置
+
 				/*************************标识符识别*************************/
 
 				if (is_letter(character) && state == 0) //开头为字母
@@ -125,13 +138,13 @@ int lexical_analysis::start_analysis()
 					category = is_keyword(token); //判断token是否为保留字
 					if (category != -1)          //如果是保留字
 					{
-						table.push_back(Table(category, 0));
+						table.push_back(Table(category, 0, sta.get_row(), count_col));
 						sta.add_key();
 					}
 					else
 					{
 						value = insert_id();
-						table.push_back(Table(1, Id[value], value)); //将识别到的标识符添加到table中
+						table.push_back(Table(1, Id[value], sta.get_row(), count_col, value)); //将识别到的标识符添加到table中
 						sta.add_id();
 					}
 
@@ -178,7 +191,7 @@ int lexical_analysis::start_analysis()
 					{
 						sta.add_num();
 						value = insert_num();
-						table.push_back(Table(2, Number[value], value));
+						table.push_back(Table(2, Number[value], sta.get_row(), count_col, value));
 						retract();      //回退
 					}
 					else
@@ -244,7 +257,7 @@ int lexical_analysis::start_analysis()
 							category = get_op(chtemp);
 						retract();
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Table(category, 0, sta.get_row(), count_col));
 						token = "";
 						state = 0;
 						break;
@@ -262,7 +275,7 @@ int lexical_analysis::start_analysis()
 							category = get_op(chtemp);
 						retract();
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Table(category, 0, sta.get_row(), count_col));
 						token = "";
 						state = 0;
 						break;
@@ -280,7 +293,7 @@ int lexical_analysis::start_analysis()
 							category = get_op(chtemp);
 						retract();
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Table(category, 0, sta.get_row(), count_col));
 						token = "";
 						state = 0;
 						break;
@@ -298,7 +311,7 @@ int lexical_analysis::start_analysis()
 							category = get_op(chtemp);
 						retract();
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Table(category, 0, sta.get_row(), count_col));
 						token = "";
 						state = 0;
 						break;
@@ -316,7 +329,7 @@ int lexical_analysis::start_analysis()
 							category = get_op(chtemp);
 						retract();
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Table(category, 0, sta.get_row(), count_col));
 						token = "";
 						state = 0;
 						break;
@@ -334,7 +347,7 @@ int lexical_analysis::start_analysis()
 							category = get_op(chtemp);
 						retract();
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Table(category, 0, sta.get_row(), count_col));
 						token = "";
 						state = 0;
 						break;
@@ -352,7 +365,7 @@ int lexical_analysis::start_analysis()
 							category = get_op(chtemp);
 						retract();
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Table(category, 0, sta.get_row(), count_col));
 						token = "";
 						state = 0;
 						break;
@@ -370,7 +383,7 @@ int lexical_analysis::start_analysis()
 							category = get_op(chtemp);
 						retract();
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Table(category, 0, sta.get_row(), count_col));
 						token = "";
 						state = 0;
 						break;
@@ -388,7 +401,7 @@ int lexical_analysis::start_analysis()
 							category = get_op(chtemp);
 						retract();
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Table(category, 0, sta.get_row(), count_col));
 						token = "";
 						state = 0;
 						break;
@@ -406,7 +419,7 @@ int lexical_analysis::start_analysis()
 							category = get_op(chtemp);
 						retract();
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Table(category, 0, sta.get_row(), count_col));
 						token = "";
 						state = 0;
 						break;
@@ -424,7 +437,7 @@ int lexical_analysis::start_analysis()
 							category = get_op(chtemp);
 						retract();
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Table(category, 0, sta.get_row(), count_col));
 						token = "";
 						state = 0;
 						break;
@@ -442,7 +455,7 @@ int lexical_analysis::start_analysis()
 							category = get_op(chtemp);
 						retract();
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Table(category, 0, sta.get_row(), count_col));
 						token = "";
 						state = 0;
 						break;
@@ -450,14 +463,14 @@ int lexical_analysis::start_analysis()
 					case '~':
 						category = get_op(chtemp);
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Table(category, 0, sta.get_row(), count_col));
 						token = "";
 						break;
 
 					case '.':
 						category = get_op(chtemp);
 						sta.add_op();
-						table.push_back(Table(category, 0));
+						table.push_back(Table(category, 0, sta.get_row(), count_col));
 						token = "";
 						state = 0;
 						break;
@@ -475,7 +488,7 @@ int lexical_analysis::start_analysis()
 					sta.add_ch();
 					sta.add_bound();
 					category = get_bound(token);
-					table.push_back(Table(category, 0));
+					table.push_back(Table(category, 0, sta.get_row(), count_col));
 					token = "";
 					state = 0;
 				}
