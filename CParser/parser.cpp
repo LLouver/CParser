@@ -65,13 +65,13 @@ LR1_Parser::~LR1_Parser()
 void LR1_Parser::print_LR_table(ofstream& of)
 {
 	char s[1024];
-	of << "<table>\n<thead>\n<td>";
+	of << "<table>\n<thead>\n<tr>";
 	of<<"<th>state</th>";
 	for(auto i = TAG2STR.begin();i!=TAG2STR.end();++i)
 	{
 		of<<"<th>"<<(*i).second<<"</th>";
 	}
-	of<<"</td></thead>\n<tbody>";
+	of<<"</tr></thead>\n<tbody>";
 	for(auto i = action_go_map.begin(); i != action_go_map.end(); ++i)
 	{
 		of<<"<tr>";
