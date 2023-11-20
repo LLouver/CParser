@@ -70,6 +70,11 @@ Statistics Lexer::get_sta()
 }
 State Lexer::getNextLexical(Token& next)
 {
+	if(count == table.size())
+	{
+		next=Token((int)Symbol::the_end,-1,table[table.size()-1].line+1,1,"");
+		return State::OK;
+	}
 	if (count >= table.size())
 		return State::ERROR;
 	// .. s=(Symbol)0;
