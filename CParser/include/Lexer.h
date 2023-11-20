@@ -126,7 +126,7 @@ private:
 	int count;     //已经返回到了哪个table
 
 	void show_statistics(ofstream& outfile);      //输出统计结果
-	void show_result(ofstream& outfile);          //输出识别结果
+	void show_result(ofstream& of);          //输出识别结果
 	void show_table(ofstream& outfile);           //输出记号表
 public:
 	Lexer()
@@ -145,7 +145,7 @@ public:
 	2：错误输出文件打开失败
 	3：词法分析出错
 	*/
-	int output_analysis(ofstream& debug_file);
+	int output_analysis(ofstream& of);
 	/*
 	0：输出正常
 	1：统计结果文件打开失败

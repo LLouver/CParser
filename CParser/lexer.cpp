@@ -551,20 +551,27 @@ void Lexer::show_statistics(ofstream& outfile)
 		<< "常数 : " << sta.get_num() << endl;
 }
 
-void Lexer::show_result(ofstream& outfile)
+void Lexer::show_result(ofstream& of)
 {
 
 	/*outfile << "---------------------------------"
 			"识别结果---------------------------------" << endl;
 	outfile << "记号\t\t属性" << endl;
 	*/
-	
-	for (int i = 0; i < int(table.size()); i++)
+	of<< "<table>\n<thead>\n<tr>";
+	of<<"<th>string</th><th>Symbol</th><th>line</th><th>col</th>";
+	of<<"</tr></thead>\n<tbody>";
+	for (auto i=table.begin();i!=table.end();++i)
 	{
-		outfile << table[i] << "\t\t" << table[i].value << endl;
+		// of << table[i] << "\t\t" << table[i].value << endl;
+		of<<"<tr>";
+		of<<"<td>"<<(*i).value<<"</td>";
+		of<<"<td>"<<convSymbol2Str((*i).symbol_id)<<"</td>";
+		of<<"<td>"<<(*i).line<<"</td>";
+		of<<"<td>"<<(*i).col<<"</td>";
+		of<<"</tr>\n";
 	}
-
-	outfile.close();
+	of<<"</tbody>"<<"</table>";
 }
 
 void Lexer::show_table(ofstream& outfile)
