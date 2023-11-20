@@ -6,13 +6,13 @@
 class Compiler
 {
 private:
-    //LR(1)è¯­æ³•åˆ†æå™¨
+    //LR(1)Óï·¨·ÖÎöÆ÷
     LR1_Parser parser;
-    //æ–‡æ³•äº§ç”Ÿå¼æ–‡ä»¶
+    //ÎÄ·¨²úÉúÊ½ÎÄ¼ş
     std::ifstream grammar_productions_file;
-    //æºæ–‡ä»¶
+    //Ô´ÎÄ¼ş
     std::ifstream sources_file;
-    //è¯­æ³•åˆ†ææ ‘æ–‡ä»¶
+    //Óï·¨·ÖÎöÊ÷ÎÄ¼ş
     std::ofstream parse_tree_file;
 public:
     void init();
