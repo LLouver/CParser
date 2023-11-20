@@ -155,7 +155,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="compiler.cpp" />
-    <ClCompile Include="CCompiler.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="lexer.cpp" />
     <ClCompile Include="lexer_tools.cpp" />
     <ClCompile Include="parser.cpp" />
@@ -168,6 +168,9 @@
     <ClInclude Include="include\lexer_tools.h" />
     <ClInclude Include="include\parser.h" />
     <ClInclude Include="include\symbol.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="grammar.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

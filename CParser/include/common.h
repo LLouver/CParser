@@ -1,10 +1,10 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#define DEBUG		//ç»Ÿä¸€çš„è°ƒè¯•æŒ‰é’®
+#define DEBUG		
 
 
-enum class State	//è¿”å›žå€¼ç±»åž‹
+enum class State	//·µ»ØÖµÀàÐÍ
 {
 	OK = 0,
 	ERROR,

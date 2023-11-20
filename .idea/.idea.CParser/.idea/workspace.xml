@@ -4,8 +4,25 @@
     <projectFile>CParser/CParser.vcxproj</projectFile>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c6da364c-4816-4542-a68a-7072e9a4a44a" name="Changes" comment="修bug">
+    <list default="true" id="c6da364c-4816-4542-a68a-7072e9a4a44a" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.CParser/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CParser/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/CCompiler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/CCompiler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/include/common.h" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/include/common.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/include/compiler.h" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/include/compiler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/include/lexer_tools.h" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/include/lexer_tools.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/include/parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/include/parser.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/include/symbol.h" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/include/symbol.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/lexer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/lexer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/parser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/parser.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/x64/Debug/CCompiler.obj" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/x64/Debug/CCompiler.obj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.command.1.tlog" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.command.1.tlog" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.read.1.tlog" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.read.1.tlog" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.write.1.tlog" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/CL.write.1.tlog" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/x64/Debug/CParser.tlog/unsuccessfulbuild" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/x64/Debug/lexer_tools.obj" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/x64/Debug/lexer_tools.obj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/x64/Debug/vc143.idb" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/x64/Debug/vc143.idb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CParser/x64/Debug/vc143.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/CParser/x64/Debug/vc143.pdb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,23 +47,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "settings.editor.selected.configurable": "SolutionBuilderGeneralOptionsPage",
-    "settings.editor.splitter.proportion": "0.22505091",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;SolutionBuilderGeneralOptionsPage&quot;,
+    &quot;settings.editor.splitter.proportion&quot;: &quot;0.22505091&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "rider.external.source.directories": [
-      "C:\\Users\\DELL\\AppData\\Roaming\\JetBrains\\Rider2022.3\\resharper-host\\DecompilerCache",
-      "C:\\Users\\DELL\\AppData\\Roaming\\JetBrains\\Rider2022.3\\resharper-host\\SourcesCache",
-      "C:\\Users\\DELL\\AppData\\Local\\Symbols\\src"
+  &quot;keyToStringList&quot;: {
+    &quot;rider.external.source.directories&quot;: [
+      &quot;C:\\Users\\DELL\\AppData\\Roaming\\JetBrains\\Rider2022.3\\resharper-host\\DecompilerCache&quot;,
+      &quot;C:\\Users\\DELL\\AppData\\Roaming\\JetBrains\\Rider2022.3\\resharper-host\\SourcesCache&quot;,
+      &quot;C:\\Users\\DELL\\AppData\\Local\\Symbols\\src&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="CParser" type="CppProject" factoryName="C++ Project">
       <configuration_1>
@@ -103,7 +120,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1700373199439</updated>
-      <workItem from="1700373201017" duration="24794000" />
+      <workItem from="1700373201017" duration="28519000" />
     </task>
     <task id="LOCAL-00001" summary="basic">
       <created>1700380720619</created>
@@ -140,7 +157,14 @@
       <option name="project" value="LOCAL" />
       <updated>1700402351557</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="提交">
+      <created>1700404669858</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1700404669858</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -154,6 +178,7 @@
     <MESSAGE value="完成compiler项目" />
     <MESSAGE value="修正include" />
     <MESSAGE value="修bug" />
-    <option name="LAST_COMMIT_MESSAGE" value="修bug" />
+    <MESSAGE value="提交" />
+    <option name="LAST_COMMIT_MESSAGE" value="提交" />
   </component>
 </project>

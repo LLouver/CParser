@@ -8,16 +8,16 @@
 using std::string;
 using std::map;
 
-//æ–‡æ³•ç¬¦å·
+//ÎÄ·¨·ûºÅ
 enum class Symbol
 {
-	//ç»ˆç»“ç¬¦
-	epsilon = 0,	//ç©º
-	id,				//æ ‡è¯†ç¬¦
-	num,			//æ•°å­—,åŒ…æ‹¬æ•´æ•°å’Œå°æ•°
-	the_end,		//#,è¡¨ç¤ºç»ˆæ­¢
+	//ÖÕ½á·û
+	epsilon = 0,	//¿Õ
+	id,				//±êÊ¶·û
+	num,			//Êı×Ö,°üÀ¨ÕûÊıºÍĞ¡Êı
+	the_end,		//#,±íÊ¾ÖÕÖ¹
 
-	//å…³é”®å­— keyword
+	//¹Ø¼ü×Ö keyword
 	kw_auto = 10,
 	kw_break,
 	kw_case,
@@ -51,7 +51,7 @@ enum class Symbol
 	kw_volatile,
 	kw_while,
 
-	//è¿ç®—ç¬¦
+	//ÔËËã·û
 	sb_add = 50,
 	sb_sub,
 	sb_mult,
@@ -86,7 +86,7 @@ enum class Symbol
 	sb_point,
 	sb_for,
 
-	//åˆ†ç•Œç¬¦
+	//·Ö½ç·û
 	sb_left_parenthesis = 100,
 	sb_right_parenthesis,
 	sb_left_brace,
@@ -102,15 +102,15 @@ enum class Symbol
 	sb_pound,
 	sb_backslash,
 
-	//ç»ˆç»“ç¬¦å’Œéç»ˆç»“ç¬¦çš„åˆ†ç•Œçº¿
-	//æ­¤æšä¸¾å€¼ä»…ç”¨ä½œåŒºåˆ†ç»ˆç»“ç¬¦å’Œéç»ˆç»“ç¬¦
+	//ÖÕ½á·ûºÍ·ÇÖÕ½á·ûµÄ·Ö½çÏß
+	//´ËÃ¶¾ÙÖµ½öÓÃ×÷Çø·ÖÖÕ½á·ûºÍ·ÇÖÕ½á·û
 	vtnboundary = 200,
 
 
-	//éç»ˆç»“ç¬¦
-	S0,				//æ‹“å¹¿æ–‡æ³•å¼€å§‹ç¬¦å·
+	//·ÇÖÕ½á·û
+	S0,				//ÍØ¹ãÎÄ·¨¿ªÊ¼·ûºÅ
 	program,
-	dec_list,		//declaration_list,å£°æ˜åˆ—è¡¨
+	dec_list,		//declaration_list,ÉùÃ÷ÁĞ±í
 	dec,
 	dec_type,
 	func_dec,
@@ -144,17 +144,17 @@ enum class Symbol
 	pre_expr,
 };
 
-//å…³é”®å­—è¡¨,å°†å…³é”®å­—å­—ç¬¦ä¸²è½¬æ¢ä¸ºå¯¹åº”çš„Tag
+//¹Ø¼ü×Ö±í,½«¹Ø¼ü×Ö×Ö·û´®×ª»»Îª¶ÔÓ¦µÄTag
 extern const std::map<std::string, Symbol> KEYWORD_STR2TAG;
-//å°†å­—ç¬¦ä¸²è½¬æ¢ä¸ºç›¸åº”çš„Tag,ç”¨äºè¯»å…¥æ–‡æ³•äº§ç”Ÿå¼
+//½«×Ö·û´®×ª»»ÎªÏàÓ¦µÄTag,ÓÃÓÚ¶ÁÈëÎÄ·¨²úÉúÊ½
 extern const std::map<std::string, Symbol> STR2TAG;
 #ifdef DEBUG
-//è¿”å›Tagæšä¸¾å€¼å¯¹åº”çš„å­—ç¬¦ä¸²è¡¨ç¤º,ä¾¿äºè°ƒè¯•
+//·µ»ØTagÃ¶¾ÙÖµ¶ÔÓ¦µÄ×Ö·û´®±íÊ¾,±ãÓÚµ÷ÊÔ
 extern const std::map<Symbol, std::string> TAG2STR;
 #endif // DEBUG
 
 
-inline bool isVT(const Symbol t)	//åˆ¤æ–­Tagæ˜¯å¦ä¸ºç»ˆç»“ç¬¦
+inline bool isVT(const Symbol t)	//ÅĞ¶ÏTagÊÇ·ñÎªÖÕ½á·û
 {
 	return t < Symbol::vtnboundary;
 }

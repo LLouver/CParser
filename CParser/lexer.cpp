@@ -2,8 +2,8 @@
 
 map<string, int>::iterator temp;
 
-map<string, int> Id;    //æ ‡è¯†ç¬¦é›†
-map<string, int> Number;     //å¸¸æ•°é›†
+map<string, int> Id;    //±êÊ¶·û¼¯
+map<string, int> Number;     //³£Êı¼¯
 
 const vector<string> Keyword = { "auto", "break", "case", "char", "const", "continue",
 								"default", "do", "double", "else", "enum", "extern",
@@ -11,36 +11,36 @@ const vector<string> Keyword = { "auto", "break", "case", "char", "const", "cont
 								"register", "return", "short", "signed", "sizeof", "static",
 								"struct", "switch", "typedef", "union", "unsigned", "void",
 								"volatile", "while"
-};   //Cè¯­è¨€ä¿ç•™å­—[32]
+};   //CÓïÑÔ±£Áô×Ö[32]
 
-const vector<string> Operator = { "+", "-", "*", "/", "%", "++", "--", //ç®—æœ¯è¿ç®—ç¬¦[7]
-								 "<", "<=", ">", ">=", "!=", "==",  //å…³ç³»è¿ç®—ç¬¦[6]
-								 "&&", "||", "!",      //é€»è¾‘è¿ç®—ç¬¦[3]
-								 "&", "|", "^", "~", "<<", ">>",    //ä½è¿ç®—ç¬¦[6]
-								 "=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=",  //èµ‹å€¼è¿ç®—ç¬¦[9]
-								 ".", "->"//    å…¶ä»–è¿ç®—ç¬¦[2]
-};  //è¿ç®—ç¬¦[33]
+const vector<string> Operator = { "+", "-", "*", "/", "%", "++", "--", //ËãÊõÔËËã·û[7]
+								 "<", "<=", ">", ">=", "!=", "==",  //¹ØÏµÔËËã·û[6]
+								 "&&", "||", "!",      //Âß¼­ÔËËã·û[3]
+								 "&", "|", "^", "~", "<<", ">>",    //Î»ÔËËã·û[6]
+								 "=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=",  //¸³ÖµÔËËã·û[9]
+								 ".", "->"//    ÆäËûÔËËã·û[2]
+};  //ÔËËã·û[33]
 
 const vector<char> Bound = { '(', ')', '{', '}', '[', ']',
 							';', ',', ':', '\?', '\"', '\'', '#','\\'
-};     //åˆ†ç•Œç¬¦[14]
+};     //·Ö½ç·û[14]
 
-int state = 0;   //å½“å‰çŠ¶æ€
-string buffer = "";   //è¾“å…¥ç¼“å†²åŒº
-char character;      //å½“å‰è¯»åˆ°çš„å­—ç¬¦
-string token;       //å­—ç¬¦æ•°ç»„ï¼Œå­˜æ”¾å½“å‰æ­£åœ¨è¯†åˆ«çš„å•è¯å­—ç¬¦ä¸²
-int ptr;        //å­—ç¬¦æŒ‡é’ˆï¼ŒæŒ‡å‘å½“å‰è¯»å–çš„å­—ç¬¦
+int state = 0;   //µ±Ç°×´Ì¬
+string buffer = "";   //ÊäÈë»º³åÇø
+char character;      //µ±Ç°¶Áµ½µÄ×Ö·û
+string token;       //×Ö·ûÊı×é£¬´æ·Åµ±Ç°ÕıÔÚÊ¶±ğµÄµ¥´Ê×Ö·û´®
+int ptr;        //×Ö·ûÖ¸Õë£¬Ö¸Ïòµ±Ç°¶ÁÈ¡µÄ×Ö·û
 
-int count_col = 0;//å½“å‰å­—ç¬¦ä¸²çš„èµ·å§‹å­—ç¬¦ä½ç½®ï¼ˆæŠ¥é”™ç”¨ï¼‰
+int count_col = 0;//µ±Ç°×Ö·û´®µÄÆğÊ¼×Ö·ûÎ»ÖÃ£¨±¨´íÓÃ£©
 
-/*æ‰€æœ‰åˆæ³•çš„ç¬¦åˆ(ä¸²)åˆ†ä¸ºï¼•ç±»ï¼šæ ‡è¯†ç¬¦ï¼Œå¸¸æ•°ï¼Œä¿ç•™å­—ï¼Œè¿ç®—ç¬¦ï¼Œç•Œç¬¦
- * æ³¨é‡Šæ ‡è®°"//","/ *"ï¼Œè¯æ³•åˆ†æä¸éœ€è¦å¤„ç†è¿™äº›(æŒ‡å†…å®¹è¢«ç›´æ¥å¿½ç•¥)
- * çº¦å®š:ã€€ã€€(ç±»åˆ«ç¼–ç å”¯ä¸€)
- * æ ‡è¯†ç¬¦ç±»åˆ«ç¼–ç ä¸ºï¼‘ï¼Œ
- * å¸¸æ•°ç±»åˆ«ç¼–ç ä¸ºï¼’ï¼Œ
- * ä¿ç•™å­—ç±»åˆ«ç¼–ç ä¸ºi+10,å…¶ä¸­iä¸ºKeywordåºåˆ—ä¸­ä¿ç•™å­—å¯¹åº”çš„ä¸‹æ ‡ï¼Œå¦‚"auto"çš„ç±»åˆ«ç¼–ç ä¸º10ï¼Œç›´åˆ°"while"çš„ç±»åˆ«ç¼–ç ä¸º41
- * è¿ç®—ç¬¦ç±»åˆ«ç¼–ç ä¸ºi+50ï¼Œå…¶ä¸­iä¸ºOperatoråºåˆ—ä¸­è¿ç®—ç¬¦å¯¹åº”çš„ä¸‹æ ‡ï¼Œå¦‚"+"çš„ç±»åˆ«ç¼–ç ä¸º50ç­‰ç­‰
- * ç•Œç¬¦ç±»åˆ«ç¼–ç ä¸ºi+100ï¼Œå…¶ä¸­iä¸ºBoundåºåˆ—ä¸­ç•Œç¬¦å¯¹åº”çš„ä¸‹æ ‡ï¼Œå¦‚"("çš„ç±»åˆ«ç¼–ç ä¸º100ï¼Œä»¥æ­¤ç±»æ¨
+/*ËùÓĞºÏ·¨µÄ·ûºÏ(´®)·ÖÎª£µÀà£º±êÊ¶·û£¬³£Êı£¬±£Áô×Ö£¬ÔËËã·û£¬½ç·û
+ * ×¢ÊÍ±ê¼Ç"//","/ *"£¬´Ê·¨·ÖÎö²»ĞèÒª´¦ÀíÕâĞ©(Ö¸ÄÚÈİ±»Ö±½ÓºöÂÔ)
+ * Ô¼¶¨:¡¡¡¡(Àà±ğ±àÂëÎ¨Ò»)
+ * ±êÊ¶·ûÀà±ğ±àÂëÎª£±£¬
+ * ³£ÊıÀà±ğ±àÂëÎª£²£¬
+ * ±£Áô×ÖÀà±ğ±àÂëÎªi+10,ÆäÖĞiÎªKeywordĞòÁĞÖĞ±£Áô×Ö¶ÔÓ¦µÄÏÂ±ê£¬Èç"auto"µÄÀà±ğ±àÂëÎª10£¬Ö±µ½"while"µÄÀà±ğ±àÂëÎª41
+ * ÔËËã·ûÀà±ğ±àÂëÎªi+50£¬ÆäÖĞiÎªOperatorĞòÁĞÖĞÔËËã·û¶ÔÓ¦µÄÏÂ±ê£¬Èç"+"µÄÀà±ğ±àÂëÎª50µÈµÈ
+ * ½ç·ûÀà±ğ±àÂëÎªi+100£¬ÆäÖĞiÎªBoundĞòÁĞÖĞ½ç·û¶ÔÓ¦µÄÏÂ±ê£¬Èç"("µÄÀà±ğ±àÂëÎª100£¬ÒÔ´ËÀàÍÆ
  */
 
 bool Lexer::set_result(string s) {
@@ -68,14 +68,14 @@ Statistics Lexer::get_sta()
 {
 	return sta;
 }
-int Lexer::getNextLexical(Token& next)
+State Lexer::getNextLexical(Token& next)
 {
 	if (count >= table.size())
-		return 1;
+		return State::ERROR;
 
 	next = table[count];
 	count++;
-	return 0;
+	return State::OK;
 }
 
 int Lexer::start_analysis(ifstream& source_file)
@@ -83,7 +83,7 @@ int Lexer::start_analysis(ifstream& source_file)
 	int ret = 0;
 	Id.clear();
 	Number.clear();
-	character = ' ';          //è¿›è¡Œå¿…è¦çš„åˆå§‹åŒ–
+	character = ' ';          //½øĞĞ±ØÒªµÄ³õÊ¼»¯
 
 	source_file.open(input_filename);
 	if (!source_file.is_open())
@@ -94,14 +94,14 @@ int Lexer::start_analysis(ifstream& source_file)
 	if (!outfile_errors.is_open())
 		return 2;
 
-	while (getline(source_file, buffer))    //ä»æ–‡ä»¶æŒ‰è¡Œè¯»å…¥ç¼“å†²åŒº
+	while (getline(source_file, buffer))    //´ÓÎÄ¼ş°´ĞĞ¶ÁÈë»º³åÇø
 	{
-		sta.add_row();         //è¡Œæ•°+1
-		int category = -1;      //ç±»åˆ«ç¼–ç 
+		sta.add_row();         //ĞĞÊı+1
+		int category = -1;      //Àà±ğ±àÂë
 		ptr = 0;
 		token = "";
 		string value;
-		if (buffer.length() == 0)		//ç©ºè¡Œä¸è¿›è¡Œåˆ†æ
+		if (buffer.length() == 0)		//¿ÕĞĞ²»½øĞĞ·ÖÎö
 			continue;
 		else
 		{
@@ -112,26 +112,26 @@ int Lexer::start_analysis(ifstream& source_file)
 				if (character == '\0')
 					break;
 
-				count_col = ptr;    //è®°å½•é¦–å­—ç¬¦ä½ç½®
+				count_col = ptr;    //¼ÇÂ¼Ê××Ö·ûÎ»ÖÃ
 
-				/*************************æ ‡è¯†ç¬¦è¯†åˆ«*************************/
+				/*************************±êÊ¶·ûÊ¶±ğ*************************/
 
-				if (is_letter(character) && state == 0) //å¼€å¤´ä¸ºå­—æ¯
+				if (is_letter(character) && state == 0) //¿ªÍ·Îª×ÖÄ¸
 				{
 					state = 1;
-					token += character;           //æ”¶é›†
-					sta.add_ch();          //å­—ç¬¦æ€»æ•°+1,æ¯æ”¶é›†ä¸€ä¸ªtokenå­—ç¬¦å°±é‡å¤æ­¤æ­¥éª¤
+					token += character;           //ÊÕ¼¯
+					sta.add_ch();          //×Ö·û×ÜÊı+1,Ã¿ÊÕ¼¯Ò»¸ötoken×Ö·û¾ÍÖØ¸´´Ë²½Öè
 					get_char();
-					while (is_letter(character) || is_digit(character)) //åè·Ÿå­—æ¯æˆ–æ•°å­—
+					while (is_letter(character) || is_digit(character)) //ºó¸ú×ÖÄ¸»òÊı×Ö
 					{
-						token += character;    //æ”¶é›†
+						token += character;    //ÊÕ¼¯
 						sta.add_ch();
 						get_char();
 					}
 					retract();
 
-					category = is_keyword(token); //åˆ¤æ–­tokenæ˜¯å¦ä¸ºä¿ç•™å­—
-					if (category != -1)          //å¦‚æœæ˜¯ä¿ç•™å­—
+					category = is_keyword(token); //ÅĞ¶ÏtokenÊÇ·ñÎª±£Áô×Ö
+					if (category != -1)          //Èç¹ûÊÇ±£Áô×Ö
 					{
 						table.push_back(Token(category, 0, sta.get_row(), count_col));
 						sta.add_key();
@@ -139,23 +139,23 @@ int Lexer::start_analysis(ifstream& source_file)
 					else
 					{
 						value = insert_id();
-						table.push_back(Token(1, Id[value], sta.get_row(), count_col, value)); //å°†è¯†åˆ«åˆ°çš„æ ‡è¯†ç¬¦æ·»åŠ åˆ°tableä¸­
+						table.push_back(Token(1, Id[value], sta.get_row(), count_col, value)); //½«Ê¶±ğµ½µÄ±êÊ¶·ûÌí¼Óµ½tableÖĞ
 						sta.add_id();
 					}
 
-					state = 0;      //æ ‡è¯†ç¬¦è¯†åˆ«å®Œæˆï¼Œå¤ä½çŠ¶æ€
+					state = 0;      //±êÊ¶·ûÊ¶±ğÍê³É£¬¸´Î»×´Ì¬
 					token = "";
 				}
 
-				/*************************æ— ç¬¦å·æ•°è¯†åˆ«*************************/
+				/*************************ÎŞ·ûºÅÊıÊ¶±ğ*************************/
 
-				else if (is_digit(character) && state == 0) //å¼€å¤´ä¸ºæ•°å­—
+				else if (is_digit(character) && state == 0) //¿ªÍ·ÎªÊı×Ö
 				{
 					state = 2;
 					token += character;
 					sta.add_ch();
 					get_char();
-					while (is_digit(character))      //ç»§ç»­è¯»å…¥æ•°å­—
+					while (is_digit(character))      //¼ÌĞø¶ÁÈëÊı×Ö
 					{
 						token += character;
 						sta.add_ch();
@@ -163,16 +163,16 @@ int Lexer::start_analysis(ifstream& source_file)
 					}
 					retract();
 				}
-				else if (character == '.' && state == 2)            //å·²ç»è¯»å…¥æ•°å­—åˆè¯»åˆ°å°æ•°ç‚¹
+				else if (character == '.' && state == 2)            //ÒÑ¾­¶ÁÈëÊı×ÖÓÖ¶Áµ½Ğ¡Êıµã
 				{
 					state = 3;
-					token += character;           //å°†å°æ•°ç‚¹åŠ å…¥token
+					token += character;           //½«Ğ¡Êıµã¼ÓÈëtoken
 					sta.add_ch();
 				}
 				else if (is_digit(character) && state == 3)
 				{
 					state = 4;
-					while (is_digit(character))      //æ­¤æ—¶tokenä¸­åº”æ˜¯xx.çš„å½¢å¼ï¼Œè‹¥æ¥ä¸‹è¯»åˆ°æ•°å­—
+					while (is_digit(character))      //´ËÊ±tokenÖĞÓ¦ÊÇxx.µÄĞÎÊ½£¬Èô½ÓÏÂ¶Áµ½Êı×Ö
 					{
 						token += character;
 						sta.add_ch();
@@ -180,14 +180,14 @@ int Lexer::start_analysis(ifstream& source_file)
 					}
 					retract();
 				}
-				else if (state == 2 || state == 4) //å·²ç»è¯†åˆ«åˆ°æ•´æ•°/å°æ•°ï¼Œåˆ¤æ–­ä¹‹åæ˜¯å¦ä¸ºæ•°å­—ç»“æŸçš„æ ‡å¿—ï¼Œå¦‚æœåé¢æ˜¯å­—æ¯ï¼Œåˆ™æ˜¯é”™è¯¯
+				else if (state == 2 || state == 4) //ÒÑ¾­Ê¶±ğµ½ÕûÊı/Ğ¡Êı£¬ÅĞ¶ÏÖ®ºóÊÇ·ñÎªÊı×Ö½áÊøµÄ±êÖ¾£¬Èç¹ûºóÃæÊÇ×ÖÄ¸£¬ÔòÊÇ´íÎó
 				{
 					if (is_bound(character) || is_operator(character) || character == ' ')
 					{
 						sta.add_num();
 						value = insert_num();
 						table.push_back(Token(2, Number[value], sta.get_row(), count_col, value));
-						retract();      //å›é€€
+						retract();      //»ØÍË
 					}
 					else
 					{
@@ -205,43 +205,43 @@ int Lexer::start_analysis(ifstream& source_file)
 					state = 0;
 				}
 
-				/*************************æ³¨é‡Šå¤„ç†********************************=*/
+				/*************************×¢ÊÍ´¦Àí********************************=*/
 
-				else if (character == '/')		//æ³¨é‡Šå¯ä»¥åœ¨ä»»ä½•çŠ¶æ€ä¸‹å‡ºç°ï¼Œæ•…ä¸å¿…åˆ¤æ–­çŠ¶æ€
+				else if (character == '/')		//×¢ÊÍ¿ÉÒÔÔÚÈÎºÎ×´Ì¬ÏÂ³öÏÖ£¬¹Ê²»±ØÅĞ¶Ï×´Ì¬
 				{
 					get_char();
-					if (character == '/')			//è¯†åˆ«åˆ°"//"ï¼Œè¿›å…¥å•è¡Œæ³¨é‡Š
-						break;				//ç›´æ¥å¿½ç•¥è¿™ä¸€è¡Œä¹‹åçš„æ‰€æœ‰å†…å®¹
-					else if (character == '*')			//è¯†åˆ«åˆ°"/*"ï¼Œè¿›å…¥å¤šè¡Œæ³¨é‡Š
-						state = 5;		//çŠ¶æ€è½¬ç§»
+					if (character == '/')			//Ê¶±ğµ½"//"£¬½øÈëµ¥ĞĞ×¢ÊÍ
+						break;				//Ö±½ÓºöÂÔÕâÒ»ĞĞÖ®ºóµÄËùÓĞÄÚÈİ
+					else if (character == '*')			//Ê¶±ğµ½"/*"£¬½øÈë¶àĞĞ×¢ÊÍ
+						state = 5;		//×´Ì¬×ªÒÆ
 					else
-						retract();			//æœªè¯†åˆ«åˆ°æ³¨é‡Šæ ‡å¿—ï¼Œå›é€€æŒ‡é’ˆ
+						retract();			//Î´Ê¶±ğµ½×¢ÊÍ±êÖ¾£¬»ØÍËÖ¸Õë
 				}
 				else if (state == 5)
 				{
-					if (character == '*')		//åœ¨æ³¨é‡ŠçŠ¶æ€(state=5)æ—¶ï¼Œè¯»åˆ°'*'
+					if (character == '*')		//ÔÚ×¢ÊÍ×´Ì¬(state=5)Ê±£¬¶Áµ½'*'
 					{
-						get_char();			//è¶…å‰æ‰«æ
-						if (character == '/')		//è¯†åˆ«åˆ°"*/"ï¼Œæ³¨é‡Šç»“æŸ
+						get_char();			//³¬Ç°É¨Ãè
+						if (character == '/')		//Ê¶±ğµ½"*/"£¬×¢ÊÍ½áÊø
 							state = 0;
 						else
 							retract();
 					}
 				}
 
-				/*************************è¿ç®—ç¬¦è¯†åˆ«*************************/
+				/*************************ÔËËã·ûÊ¶±ğ*************************/
 
-				else if (is_operator(character) && state == 0) //è¯†åˆ«åˆ°è¿ç®—ç¬¦
+				else if (is_operator(character) && state == 0) //Ê¶±ğµ½ÔËËã·û
 				{
 					state = 6;
 					token += character;
 					sta.add_ch();
 					char chtemp = character;
-					switch (chtemp)    //åˆ¤æ–­æ˜¯å¦æ˜¯äºŒç›®è¿ç®—ç¬¦
+					switch (chtemp)    //ÅĞ¶ÏÊÇ·ñÊÇ¶şÄ¿ÔËËã·û
 					{
 					case '+':
 						get_char();
-						if (character == '+' || character == '=')    //è¯†åˆ«åˆ°"++"||"+="
+						if (character == '+' || character == '=')    //Ê¶±ğµ½"++"||"+="
 						{
 							token += character;
 							sta.add_ch();
@@ -259,7 +259,7 @@ int Lexer::start_analysis(ifstream& source_file)
 
 					case '-':
 						get_char();
-						if (character == '-' || character == '=' || character == '>') //è¯†åˆ«åˆ°"--"||"-="||"->"
+						if (character == '-' || character == '=' || character == '>') //Ê¶±ğµ½"--"||"-="||"->"
 						{
 							token += character;
 							sta.add_ch();
@@ -277,7 +277,7 @@ int Lexer::start_analysis(ifstream& source_file)
 
 					case '*':
 						get_char();
-						if (character == '=')        //è¯†åˆ«åˆ°"*="
+						if (character == '=')        //Ê¶±ğµ½"*="
 						{
 							token += character;
 							sta.add_ch();
@@ -295,7 +295,7 @@ int Lexer::start_analysis(ifstream& source_file)
 
 					case '/':
 						get_char();
-						if (character == '=')        //è¯†åˆ«åˆ°"/="
+						if (character == '=')        //Ê¶±ğµ½"/="
 						{
 							token += character;
 							sta.add_ch();
@@ -313,7 +313,7 @@ int Lexer::start_analysis(ifstream& source_file)
 
 					case '%':
 						get_char();
-						if (character == '=')        //è¯†åˆ«åˆ°"%="
+						if (character == '=')        //Ê¶±ğµ½"%="
 						{
 							token += character;
 							sta.add_ch();
@@ -331,7 +331,7 @@ int Lexer::start_analysis(ifstream& source_file)
 
 					case '<':
 						get_char();
-						if (character == '=' || character == '<') //è¯†åˆ«åˆ°"<="||"<<"
+						if (character == '=' || character == '<') //Ê¶±ğµ½"<="||"<<"
 						{
 							token += character;
 							sta.add_ch();
@@ -349,7 +349,7 @@ int Lexer::start_analysis(ifstream& source_file)
 
 					case '>':
 						get_char();
-						if (character == '=' || character == '>') //è¯†åˆ«åˆ°">="||">>"
+						if (character == '=' || character == '>') //Ê¶±ğµ½">="||">>"
 						{
 							token += character;
 							sta.add_ch();
@@ -367,7 +367,7 @@ int Lexer::start_analysis(ifstream& source_file)
 
 					case '!':
 						get_char();
-						if (character == '=') //è¯†åˆ«åˆ°"!="
+						if (character == '=') //Ê¶±ğµ½"!="
 						{
 							token += character;
 							sta.add_ch();
@@ -385,7 +385,7 @@ int Lexer::start_analysis(ifstream& source_file)
 
 					case '=':
 						get_char();
-						if (character == '=') //è¯†åˆ«åˆ°"=="
+						if (character == '=') //Ê¶±ğµ½"=="
 						{
 							token += character;
 							sta.add_ch();
@@ -403,7 +403,7 @@ int Lexer::start_analysis(ifstream& source_file)
 
 					case '&':
 						get_char();
-						if (character == '&' || character == '=') //è¯†åˆ«åˆ°"&&"||"&="
+						if (character == '&' || character == '=') //Ê¶±ğµ½"&&"||"&="
 						{
 							token += character;
 							sta.add_ch();
@@ -421,7 +421,7 @@ int Lexer::start_analysis(ifstream& source_file)
 
 					case '|':
 						get_char();
-						if (character == '|' || character == '=') //è¯†åˆ«åˆ°"||"||"|="
+						if (character == '|' || character == '=') //Ê¶±ğµ½"||"||"|="
 						{
 							token += character;
 							sta.add_ch();
@@ -439,7 +439,7 @@ int Lexer::start_analysis(ifstream& source_file)
 
 					case '^':
 						get_char();
-						if (character == '=') //è¯†åˆ«åˆ°"^="
+						if (character == '=') //Ê¶±ğµ½"^="
 						{
 							token += character;
 							sta.add_ch();
@@ -475,7 +475,7 @@ int Lexer::start_analysis(ifstream& source_file)
 					}
 				}
 
-				/*************************ç•Œç¬¦è¯†åˆ«*************************/
+				/*************************½ç·ûÊ¶±ğ*************************/
 
 				else if (is_bound(character) && state == 0)
 				{
@@ -487,7 +487,7 @@ int Lexer::start_analysis(ifstream& source_file)
 					token = "";
 					state = 0;
 				}
-				/*************************é”™è¯¯å¤„ç†(æ— æ³•è¯†åˆ«çš„ç¬¦å·)*************************/
+				/*************************´íÎó´¦Àí(ÎŞ·¨Ê¶±ğµÄ·ûºÅ)*************************/
 
 				else if (character != '\t' && character != '\0')
 				{
@@ -531,25 +531,26 @@ int Lexer::output_analysis()
 
 void Lexer::show_statistics(ofstream& outfile)
 {
-	outfile << "----------------------------------ç»Ÿè®¡ç»“æœ----------------------------------" << endl << endl
-		<< "è¯­å¥è¡Œæ•° : " << sta.get_row() << endl
-		<< "å­—ç¬¦æ€»æ•° : " << sta.get_ch() << endl
-		<< "ä¿ç•™å­— : " << sta.get_key() << endl
-		<< "è¿ç®—ç¬¦ : " << sta.get_op() << endl
-		<< "ç•Œç¬¦ : " << sta.get_bound() << endl
-		<< "æ ‡è¯†ç¬¦ : " << sta.get_id() << endl
-		<< "å¸¸æ•° : " << sta.get_num() << endl;
+	outfile << "----------------------------------Í³¼Æ½á¹û----------------------------------" << endl << endl
+		<< "Óï¾äĞĞÊı : " << sta.get_row() << endl
+		<< "×Ö·û×ÜÊı : " << sta.get_ch() << endl
+		<< "±£Áô×Ö : " << sta.get_key() << endl
+		<< "ÔËËã·û : " << sta.get_op() << endl
+		<< "½ç·û : " << sta.get_bound() << endl
+		<< "±êÊ¶·û : " << sta.get_id() << endl
+		<< "³£Êı : " << sta.get_num() << endl;
 }
 
 void Lexer::show_result(ofstream& outfile)
 {
 
-	outfile << "---------------------------------è¯†åˆ«ç»“æœ---------------------------------" << endl;
-	outfile << "è®°å·\t\tå±æ€§" << endl;
+	outfile << "---------------------------------"
+			"Ê¶±ğ½á¹û---------------------------------" << endl;
+	outfile << "¼ÇºÅ\t\tÊôĞÔ" << endl;
 
 	for (int i = 0; i < int(table.size()); i++)
 	{
-		outfile << table[i].symbol_id << "\t\t" << table[i].value << endl;
+		outfile << (int)table[i].symbol_id << "\t\t" << table[i].value << endl;
 	}
 
 	outfile.close();
@@ -558,11 +559,11 @@ void Lexer::show_result(ofstream& outfile)
 void Lexer::show_table(ofstream& outfile)
 {
 
-	outfile << "----------------------------------" << "ç¬¦å·ï¼ç¼–ç å¯¹ç…§è¡¨" << "----------------------------------" << endl << endl;
+	outfile << "----------------------------------" << "·ûºÅ£­±àÂë¶ÔÕÕ±í" << "----------------------------------" << endl << endl;
 
-	outfile << "==================" << "ä¿ç•™å­—" << "==================" << endl;
+	outfile << "==================" << "±£Áô×Ö" << "==================" << endl;
 
-	outfile << "ä¿ç•™å­—ç¬¦\t\tç±»åˆ«ç¼–ç " << endl;
+	outfile << "±£Áô×Ö·û\t\tÀà±ğ±àÂë" << endl;
 	for (int i = 0; i < int(Keyword.size()); i++)
 	{
 		if (Keyword[i].size() >= 8)
@@ -575,22 +576,22 @@ void Lexer::show_table(ofstream& outfile)
 		}
 	}
 
-	outfile << endl << "==================" << "è¿ç®—ç¬¦" << "==================" << endl;
-	outfile << "è¿ç®—ç¬¦\t\tç±»åˆ«ç¼–ç " << endl;
+	outfile << endl << "==================" << "ÔËËã·û" << "==================" << endl;
+	outfile << "ÔËËã·û\t\tÀà±ğ±àÂë" << endl;
 	for (int i = 0; i < int(Operator.size()); i++)
 	{
 		outfile << Operator[i] << "\t\t" << i + 50 << endl;
 	}
 
-	outfile << endl << "==================" << "ç•Œç¬¦" << "==================" << endl;
-	outfile << "ç•Œç¬¦\t\tç±»åˆ«ç¼–ç " << endl;
+	outfile << endl << "==================" << "½ç·û" << "==================" << endl;
+	outfile << "½ç·û\t\tÀà±ğ±àÂë" << endl;
 	for (int i = 0; i < int(Bound.size()); i++)
 	{
 		outfile << Bound[i] << "\t\t" << i + 100 << endl;
 	}
 
-	outfile << endl << "==================" << "æ ‡è¯†ç¬¦" << "==================" << endl;
-	outfile << "æ ‡è¯†ç¬¦\t\tç±»åˆ«ç¼–ç \t\tè¡¨ä¸­ä½ç½®" << endl;
+	outfile << endl << "==================" << "±êÊ¶·û" << "==================" << endl;
+	outfile << "±êÊ¶·û\t\tÀà±ğ±àÂë\t\t±íÖĞÎ»ÖÃ" << endl;
 	for (temp = Id.begin(); temp != Id.end(); temp++)
 	{
 		if (temp->first.size() >= 8)
@@ -602,8 +603,8 @@ void Lexer::show_table(ofstream& outfile)
 			outfile << temp->first << "\t\t1\t\t" << temp->second << endl;
 		}
 	}
-	outfile << endl << "==================" << "å¸¸æ•°è¡¨" << "==================" << endl;
-	outfile << "å¸¸é‡å€¼\t\tç±»åˆ«ç¼–ç \t\tè¡¨ä¸­ä½ç½®" << endl;
+	outfile << endl << "==================" << "³£Êı±í" << "==================" << endl;
+	outfile << "³£Á¿Öµ\t\tÀà±ğ±àÂë\t\t±íÖĞÎ»ÖÃ" << endl;
 	for (temp = Number.begin(); temp != Number.end(); temp++)
 	{
 		outfile << temp->first << "\t\t2\t\t" << temp->second << endl;

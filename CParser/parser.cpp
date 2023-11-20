@@ -16,7 +16,7 @@ using namespace std;
 /********************************************************
 * @Author : LeeQueue & Gao
 *
-* zcggå¥½å¸…!
+* zcggºÃË§!
 *
 ********************************************************/
 
@@ -34,13 +34,13 @@ LR1_Parser::LR1_Parser()
 	//	{Tag::F,{Tag::id}},*/
 
 
-	//	////æµ‹è¯•ç”¨ä¾‹: S'->S,S->BB,B->aB,B->b
+	//	////²âÊÔÓÃÀı: S'->S,S->BB,B->aB,B->b
 	//	//{Tag::S0,{Tag::S}},
 	//	//{Tag::S,{Tag::B,Tag::B}},
 	//	//{Tag::B,{Tag::a,Tag::B}},
 	//	//{Tag::B,{Tag::b}},
 
-	//	//æµ‹è¯•ç”¨ä¾‹: S'->S,S->BB,B->b,B->ç©º
+	//	//²âÊÔÓÃÀı: S'->S,S->BB,B->b,B->¿Õ
 	//	{Tag::S0,{Tag::S}},
 	//	{Tag::S,{Tag::B,Tag::B}},
 	//	{Tag::B,{Tag::b}},
@@ -52,7 +52,7 @@ LR1_Parser::~LR1_Parser()
 {
 }
 
-State LR1_Parser::readProductionsFile(ifstream& in)	//è¯»å…¥æ–‡æ³•äº§ç”Ÿå¼
+State LR1_Parser::readProductionsFile(ifstream& in)	//¶ÁÈëÎÄ·¨²úÉúÊ½
 {
 	if (!in.is_open())
 		return State::ERROR;
@@ -71,7 +71,7 @@ State LR1_Parser::readProductionsFile(ifstream& in)	//è¯»å…¥æ–‡æ³•äº§ç”Ÿå¼
 				new_grammar.right.push_back(convStr2Tag(temp));
 			productions_list.push_back(new_grammar);
 		}
-		productions_list[0].right.push_back(productions_list[1].left);	//æ„é€ æ‹“å¹¿æ–‡æ³•
+		productions_list[0].right.push_back(productions_list[1].left);	//¹¹ÔìÍØ¹ãÎÄ·¨
 	}
 	catch (const std::exception& e) {
 		return State::ERROR;
@@ -98,9 +98,9 @@ State LR1_Parser::lex(ifstream& source_file)
 void LR1_Parser::initFirstList()
 {
 	for (int i = int(Symbol::epsilon); isVT(Symbol(i)); ++i)
-		first_list[Symbol(i)] = { Symbol(i) };	//ç»ˆç»“ç¬¦Firsté›†ä¸ºè‡ªèº«
+		first_list[Symbol(i)] = { Symbol(i) };	//ÖÕ½á·ûFirst¼¯Îª×ÔÉí
 
-	vector<int> grammar_pointer;	//è®°å½•äº§ç”Ÿå¼å³éƒ¨ç¬¬ä¸€ä¸ªç¬¦å·ä¸ºéç»ˆç»“ç¬¦çš„æ–‡æ³•
+	vector<int> grammar_pointer;	//¼ÇÂ¼²úÉúÊ½ÓÒ²¿µÚÒ»¸ö·ûºÅÎª·ÇÖÕ½á·ûµÄÎÄ·¨
 	for (int i = 0; i < productions_list.size(); i++) {
 		if (productions_list[i].right.size() == 0)
 			first_list[productions_list[i].left].insert(Symbol::epsilon);
@@ -121,18 +121,18 @@ void LR1_Parser::initFirstList()
 			for (const auto& elem_A : productions_list[i].right) {
 				have_epsilon = false;
 				if (isVN(elem_A)) {
-					//è€ƒè™‘A->A..çš„ç‰¹æ®Šæƒ…å†µ
+					//¿¼ÂÇA->A..µÄÌØÊâÇé¿ö
 					if (productions_list[i].left == elem_A) {
 						if (first_list[elem_A].count(Symbol::epsilon))
 							continue;
 						else
 							break;
 					}
-					//è‹¥å‡ºç°A->B...,åˆ™å°†Bçš„firsté›†å…¨éƒ¨åŠ åˆ°Aä¸­
+					//Èô³öÏÖA->B...,Ôò½«BµÄfirst¼¯È«²¿¼Óµ½AÖĞ
 					for (const auto& elem_B : first_list[elem_A]) {
 						if (elem_B == Symbol::epsilon) {
 							have_epsilon = true;
-							continue;	//epsilonä¸åŠ å…¥
+							continue;	//epsilon²»¼ÓÈë
 						}
 						int before = first_list[productions_list[i].left].size();
 						first_list[productions_list[i].left].insert(elem_B);
@@ -141,40 +141,40 @@ void LR1_Parser::initFirstList()
 							flag = true;
 					}
 					if (!have_epsilon)
-						break;	//è‹¥ä¸å«ç©º,åˆ™åç»­ä¸ç”¨ç»§ç»­åŠ å…¥
+						break;	//Èô²»º¬¿Õ,ÔòºóĞø²»ÓÃ¼ÌĞø¼ÓÈë
 				}
 				else
 					break;
 			}
-			if (have_epsilon)	//å¦‚æœäº§ç”Ÿå¼æœ€åä¸€ä¸ªç¬¦å·ä¹Ÿå«ç©º,åˆ™å°†ç©ºåŠ å…¥Firsté›†
+			if (have_epsilon)	//Èç¹û²úÉúÊ½×îºóÒ»¸ö·ûºÅÒ²º¬¿Õ,Ôò½«¿Õ¼ÓÈëFirst¼¯
 				first_list[productions_list[i].left].insert(Symbol::epsilon);
 		}
-		if (!flag)	//å¦‚æœfirsté›†ä¸å†å¢åŠ ,åˆ™è¿”å›
+		if (!flag)	//Èç¹ûfirst¼¯²»ÔÙÔö¼Ó,Ôò·µ»Ø
 			break;
 	}
 }
 
 set<GrammarProject> LR1_Parser::getClosure(const set<GrammarProject>& project_set)
 {
-	set<GrammarProject> ret(project_set);			//project_setè‡ªèº«çš„æ‰€æœ‰é¡¹ç›®éƒ½åœ¨é—­åŒ…ä¸­
-	set<GrammarProject> old_project(project_set);	//è¾…åŠ©é›†åˆ
+	set<GrammarProject> ret(project_set);			//project_set×ÔÉíµÄËùÓĞÏîÄ¿¶¼ÔÚ±Õ°üÖĞ
+	set<GrammarProject> old_project(project_set);	//¸¨Öú¼¯ºÏ
 	set<GrammarProject> new_project;
 
 	bool flag;
 	while (true) {
 		flag = false;
-		for (const auto& i : old_project) {	//æ‰«æä¸Šä¸€æ¬¡äº§ç”Ÿçš„æ‰€æœ‰é¡¹ç›®
+		for (const auto& i : old_project) {	//É¨ÃèÉÏÒ»´Î²úÉúµÄËùÓĞÏîÄ¿
 			if (productions_list[i.id_production].right.size() > i.point && isVN(productions_list[i.id_production].right[i.point])) {
-				//A->Î±.BÎ²å‹
+				//A->¦Á.B¦ÂĞÍ
 				Symbol vn = productions_list[i.id_production].right[i.point];
 
-				//æ±‚å‡ºfirst(Î²a)
+				//Çó³öfirst(¦Âa)
 				set<Symbol> firstba;
 				if (i.point + 1 < productions_list[i.id_production].right.size()) {
 					firstba = first_list[productions_list[i.id_production].right[i.point + 1]];
 					auto p = firstba.find(Symbol::epsilon);
 					if (p != firstba.cend()) {
-						//å¦‚æœå«æœ‰epsilon,åˆ™åˆ é™¤epsilonå¹¶æŠŠåŸé¡¹ç›®çš„followsåŠ å…¥
+						//Èç¹ûº¬ÓĞepsilon,ÔòÉ¾³ıepsilon²¢°ÑÔ­ÏîÄ¿µÄfollows¼ÓÈë
 						firstba.erase(p);
 						for (const auto& follow : i.follows)
 							firstba.insert(follow);
@@ -186,18 +186,18 @@ set<GrammarProject> LR1_Parser::getClosure(const set<GrammarProject>& project_se
 				}
 
 				for (int gp = 0; gp < productions_list.size(); gp++) {
-					//æ‰«ææ‰€æœ‰B->Î³å‹çš„äº§ç”Ÿå¼
+					//É¨ÃèËùÓĞB->¦ÃĞÍµÄ²úÉúÊ½
 					if (productions_list[gp].left == vn) {
-						//è‹¥CLOSUREä¸­ä¸å­˜åœ¨{B->Î³,firstba},åˆ™åŠ å…¥
+						//ÈôCLOSUREÖĞ²»´æÔÚ{B->¦Ã,firstba},Ôò¼ÓÈë
 						bool have = false;
 						for (auto it = ret.begin(); it != ret.end(); ++it) {
 							if (it->id_production == gp && it->point == 0) {
-								//é¡¹ç›®åœ¨é›†åˆ
+								//ÏîÄ¿ÔÚ¼¯ºÏ
 								have = true;
 								if (it->follows != firstba) {
-									//è‹¥followsä¸å®Œæ•´,åˆ™æ’å…¥æ–°çš„follows
+									//Èôfollows²»ÍêÕû,Ôò²åÈëĞÂµÄfollows
 									flag = true;
-									//ç”±äºé›†åˆå…ƒç´ çš„å€¼æ— æ³•ä¿®æ”¹,æ•…åªèƒ½è¦†ç›–ä¹‹
+									//ÓÉÓÚ¼¯ºÏÔªËØµÄÖµÎŞ·¨ĞŞ¸Ä,¹ÊÖ»ÄÜ¸²¸ÇÖ®
 									auto ngp = *it;
 									for (Symbol firstba_elem : firstba)
 										ngp.follows.insert(firstba_elem);
@@ -209,7 +209,7 @@ set<GrammarProject> LR1_Parser::getClosure(const set<GrammarProject>& project_se
 							}
 						}
 						if (!have) {
-							//å¦åˆ™æ’å…¥æ–°é¡¹ç›®
+							//·ñÔò²åÈëĞÂÏîÄ¿
 							flag = true;
 							ret.insert({ gp,0,firstba });
 							new_project.insert({ gp,0,firstba });
@@ -218,9 +218,9 @@ set<GrammarProject> LR1_Parser::getClosure(const set<GrammarProject>& project_se
 				}
 			}
 		}
-		if (!flag)	//ä¸å†å¢åŠ ,åˆ™è¿”å›
+		if (!flag)	//²»ÔÙÔö¼Ó,Ôò·µ»Ø
 			break;
-		old_project = new_project;	//å¯¹æ–°æ·»åŠ é¡¹ç›®è¿›è¡Œä¸‹ä¸€è½®æ‰«æ
+		old_project = new_project;	//¶ÔĞÂÌí¼ÓÏîÄ¿½øĞĞÏÂÒ»ÂÖÉ¨Ãè
 		new_project.clear();
 	}
 
@@ -230,7 +230,7 @@ set<GrammarProject> LR1_Parser::getClosure(const set<GrammarProject>& project_se
 int LR1_Parser::findSameProjectSet(const set<GrammarProject>& new_pset)
 {
 	for (int i = 0; i < project_set_list.size(); i++) {
-		if (project_set_list[i].size() != new_pset.size())	//é•¿åº¦ä¸åŒä¸€å®šä¸é‡å¤
+		if (project_set_list[i].size() != new_pset.size())	//³¤¶È²»Í¬Ò»¶¨²»ÖØ¸´
 			continue;
 		else {
 			bool same = true;
@@ -246,179 +246,179 @@ int LR1_Parser::findSameProjectSet(const set<GrammarProject>& new_pset)
 				return i;
 		}
 	}
-	return -1;	//æœªæ‰¾åˆ°
+	return -1;	//Î´ÕÒµ½
 }
 
 State LR1_Parser::initActionGotoMap()
 {
 	project_set_list.clear();
-	//åˆå§‹çŠ¶æ€ä¸ºCLOSURE({S0->.program,#})
+	//³õÊ¼×´Ì¬ÎªCLOSURE({S0->.program,#})
 	project_set_list.emplace_back(getClosure({ { 0,0,{Symbol::the_end} } }));
 
-	int new_index = 0;		//æ–°é¡¹ç›®é›†ä¸‹æ ‡
+	int new_index = 0;		//ĞÂÏîÄ¿¼¯ÏÂ±ê
 	while (new_index < project_set_list.size()) {
 		set<GrammarProject>& pset_now = project_set_list[new_index];
-		map<Symbol, set<GrammarProject>> new_pset_map;		//å½“å‰é¡¹ç›®é›†å¯ä»¥äº§ç”Ÿçš„æ–°é¡¹ç›®é›†
+		map<Symbol, set<GrammarProject>> new_pset_map;		//µ±Ç°ÏîÄ¿¼¯¿ÉÒÔ²úÉúµÄĞÂÏîÄ¿¼¯
 
-		//æ‰«ææ‰€æœ‰é¡¹ç›®
+		//É¨ÃèËùÓĞÏîÄ¿
 		for (const auto& i : pset_now) {
 			if (i.point < productions_list[i.id_production].right.size()) {
-				//ä¸æ˜¯å½’çº¦é¡¹ç›®
+				//²»ÊÇ¹éÔ¼ÏîÄ¿
 				new_pset_map[productions_list[i.id_production].right[i.point]].insert({ i.id_production,i.point + 1,i.follows });
 			}
 			else {
-				//æ˜¯å½’çº¦é¡¹ç›®
+				//ÊÇ¹éÔ¼ÏîÄ¿
 				if (i.id_production == 0 && i.point == 1 && i.follows.size() == 1 && *i.follows.cbegin() == Symbol::the_end)
-					action_go_map[new_index][Symbol::the_end] = { ActionType::accept,i.id_production };	//å¯æ¥å—çŠ¶æ€
+					action_go_map[new_index][Symbol::the_end] = { ActionType::accept,i.id_production };	//¿É½ÓÊÜ×´Ì¬
 				else {
 					for (const auto& follow : i.follows) {
 						if (action_go_map[new_index].count(follow))
-							return State::ERROR;	//å¦‚æœè½¬ç§»è¡¨è¯¥é¡¹å·²ç»æœ‰åŠ¨ä½œ,åˆ™äº§ç”Ÿå¤šé‡å…¥å£,ä¸æ˜¯LR(1)æ–‡æ³•,æŠ¥é”™
+							return State::ERROR;	//Èç¹û×ªÒÆ±í¸ÃÏîÒÑ¾­ÓĞ¶¯×÷,Ôò²úÉú¶àÖØÈë¿Ú,²»ÊÇLR(1)ÎÄ·¨,±¨´í
 						else
-							action_go_map[new_index][follow] = { ActionType::reduction,i.id_production };	//ç”¨è¯¥äº§ç”Ÿå¼å½’çº¦
+							action_go_map[new_index][follow] = { ActionType::reduction,i.id_production };	//ÓÃ¸Ã²úÉúÊ½¹éÔ¼
 					}
 				}
 			}
 		}
 
-		//ç”Ÿæˆæ–°closureé›†ï¼Œå¡«å†™è½¬ç§»è¡¨
+		//Éú³ÉĞÂclosure¼¯£¬ÌîĞ´×ªÒÆ±í
 		for (const auto& i : new_pset_map) {
-			set<GrammarProject> NS = getClosure(i.second);	//ç”Ÿæˆæ–°closureé›†
-			int it = findSameProjectSet(NS);				//æŸ¥é‡
+			set<GrammarProject> NS = getClosure(i.second);	//Éú³ÉĞÂclosure¼¯
+			int it = findSameProjectSet(NS);				//²éÖØ
 			if (it == -1) {
 				project_set_list.emplace_back(NS);
-				action_go_map[new_index][i.first] = { ActionType::shift_in, int(project_set_list.size()) - 1 };	//ç§»è¿›
+				action_go_map[new_index][i.first] = { ActionType::shift_in, int(project_set_list.size()) - 1 };	//ÒÆ½ø
 			}
 			else {
-				action_go_map[new_index][i.first] = { ActionType::shift_in, it };	//ç§»è¿›
+				action_go_map[new_index][i.first] = { ActionType::shift_in, it };	//ÒÆ½ø
 			}
 		}
 
-		++new_index;	//å¤„ç†ä¸‹ä¸€ä¸ªé¡¹ç›®é›†çš„è½¬ç§»å…³ç³»
+		++new_index;	//´¦ÀíÏÂÒ»¸öÏîÄ¿¼¯µÄ×ªÒÆ¹ØÏµ
 	}
 
 	return State::OK;
 }
 
 /*********************************************************************************************************************
-* parseré‡Œæˆ‘ç›´æ¥è°ƒç”¨äº†getNextLexicalå‡½æ•°ï¼Œä½†æ˜¯lexeræ­¤æ—¶å¹¶æ²¡æœ‰ä¸ºå…¶æŒ‡æ˜æ–‡ä»¶è·¯å¾„file_inï¼Œå¯ä»¥åœ¨parserçš„æ„é€ å‡½æ•°é‡ŒæŒ‡æ˜ä¸€ä¸‹
-* å½’çº¦çš„æ—¶å€™å¯ä»¥æ„é€ è¯­æ³•æ ‘ï¼Œè¿™é‡Œå…ˆç©ºäº†ï¼Œç­‰æˆ‘ä»¬å•†é‡å¥½å†åŠ è¿›å»ï¼Œå˜¿
+* parserÀïÎÒÖ±½Óµ÷ÓÃÁËgetNextLexicalº¯Êı£¬µ«ÊÇlexer´ËÊ±²¢Ã»ÓĞÎªÆäÖ¸Ã÷ÎÄ¼şÂ·¾¶file_in£¬¿ÉÒÔÔÚparserµÄ¹¹Ôìº¯ÊıÀïÖ¸Ã÷Ò»ÏÂ
+* ¹éÔ¼µÄÊ±ºò¿ÉÒÔ¹¹ÔìÓï·¨Ê÷£¬ÕâÀïÏÈ¿ÕÁË£¬µÈÎÒÃÇÉÌÁ¿ºÃÔÙ¼Ó½øÈ¥£¬ºÙ
 **********************************************************************************************************************/
 State LR1_Parser::parse(Token& err_token)
 {
     err_token.line = err_token.col = 0;
     
 
-    stack<int> SStack;	//çŠ¶æ€æ ˆ
-    stack<Symbol> TStack;	//è¾“å…¥æ ˆ
-    stack<int> NStack;  //æ ‘ç»“ç‚¹æ ˆï¼Œå­˜æ”¾æ ‘èŠ‚ç‚¹ä¸‹æ ‡
+    stack<int> SStack;	//×´Ì¬Õ»
+    stack<Symbol> TStack;	//ÊäÈëÕ»
+    stack<int> NStack;  //Ê÷½áµãÕ»£¬´æ·ÅÊ÷½ÚµãÏÂ±ê
 
-    SStack.push(0);		//åˆå§‹åŒ–
-    TStack.push(Symbol::the_end);	//åˆå§‹åŒ–
-    //NStack.push(-1);			//åˆå§‹åŒ–
+    SStack.push(0);		//³õÊ¼»¯
+    TStack.push(Symbol::the_end);	//³õÊ¼»¯
+    //NStack.push(-1);			//³õÊ¼»¯
 
-    bool use_lastToken = false;	//åˆ¤æ–­æ˜¯å¦ä½¿ç”¨ä¸Šæ¬¡çš„token
-    Token t_now;	//å½“å‰token
-    int s_now;		//å½“å‰state
-    Action m_now;	//å½“å‰åŠ¨ä½œ
+    bool use_lastToken = false;	//ÅĞ¶ÏÊÇ·ñÊ¹ÓÃÉÏ´ÎµÄtoken
+    Token t_now;	//µ±Ç°token
+    int s_now;		//µ±Ç°state
+    Action m_now;	//µ±Ç°¶¯×÷
     while (true) {
-        //éœ€è¦æ–°è·å–ä¸€ä¸ªtoken
+        //ĞèÒªĞÂ»ñÈ¡Ò»¸ötoken
         if (!use_lastToken) {
-            State ret = (State)this->lexer.getNextLexical(t_now);
+            State ret = this->lexer.getNextLexical(t_now);
             if (ret == State::ERROR)
                 return ret;
         }
-        s_now = SStack.top();						//è·å–å½“å‰çŠ¶æ€
+        s_now = SStack.top();						//»ñÈ¡µ±Ç°×´Ì¬
         if (action_go_map.count(s_now) == 0 || action_go_map[s_now].count(t_now.symbol_id) == 0) {
-            //è‹¥å¯¹åº”è¡¨æ ¼é¡¹ä¸ºç©º,åˆ™å‡ºé”™
+            //Èô¶ÔÓ¦±í¸ñÏîÎª¿Õ,Ôò³ö´í
             err_token = t_now;
             return State::ERROR;
         }
-        m_now = action_go_map[s_now][t_now.symbol_id];	//è·å–å½“å‰åŠ¨ä½œ
-            //ç§»è¿›
+        m_now = action_go_map[s_now][t_now.symbol_id];	//»ñÈ¡µ±Ç°¶¯×÷
+            //ÒÆ½ø
         if (m_now.action_type == ActionType::shift_in) {
             SStack.push(m_now.go);
             TStack.push(t_now.symbol_id);
 
-            TNode node_in;	//ç§»è¿›çš„æ ‘ç»“ç‚¹
-            node_in.tag = t_now.symbol_id;	//åˆå§‹åŒ–tagå€¼
-            node_in.p = pTree.TNode_List.size();	//æŒ‡å®šæ ‘èŠ‚ç‚¹åœ¨TNode_Listä¸­çš„ä¸‹æ ‡
-            pTree.TNode_List.push_back(node_in);	//ç§»è¿›æ ‘ç»“ç‚¹
-            NStack.push(node_in.p);					//å°†æ ‘èŠ‚ç‚¹ä¸‹æ ‡ç§»è¿›æ ‘æ ˆï¼ˆä¿è¯æ ˆå†…ç»“ç‚¹å’ŒTNode_Listä¸­çš„ç»“ç‚¹ä¸€ä¸€å¯¹åº”ï¼‰
+            TNode node_in;	//ÒÆ½øµÄÊ÷½áµã
+            node_in.tag = t_now.symbol_id;	//³õÊ¼»¯tagÖµ
+            node_in.p = pTree.TNode_List.size();	//Ö¸¶¨Ê÷½ÚµãÔÚTNode_ListÖĞµÄÏÂ±ê
+            pTree.TNode_List.push_back(node_in);	//ÒÆ½øÊ÷½áµã
+            NStack.push(node_in.p);					//½«Ê÷½ÚµãÏÂ±êÒÆ½øÊ÷Õ»£¨±£Ö¤Õ»ÄÚ½áµãºÍTNode_ListÖĞµÄ½áµãÒ»Ò»¶ÔÓ¦£©
 
             use_lastToken = false;
-        }	//å½’çº¦
+        }	//¹éÔ¼
         else if (m_now.action_type == ActionType::reduction) {
-            int len = productions_list[m_now.go].right.size();	//äº§ç”Ÿå¼å³éƒ¨é•¿åº¦
+            int len = productions_list[m_now.go].right.size();	//²úÉúÊ½ÓÒ²¿³¤¶È
 
-            TNode node_left;								//äº§ç”Ÿå¼å·¦éƒ¨
-            node_left.tag = productions_list[m_now.go].left;	//äº§ç”Ÿå¼å·¦éƒ¨tag
-            node_left.p = pTree.TNode_List.size();			//ç§»è¿›æ ‘ç»“ç‚¹
+            TNode node_left;								//²úÉúÊ½×ó²¿
+            node_left.tag = productions_list[m_now.go].left;	//²úÉúÊ½×ó²¿tag
+            node_left.p = pTree.TNode_List.size();			//ÒÆ½øÊ÷½áµã
 
-            //ç§»å‡ºæ ˆ
+            //ÒÆ³öÕ»
             while (len-- > 0) {
                 SStack.pop();
                 TStack.pop();
 
-                node_left.childs.push_front(NStack.top());	//åˆ›å»ºå­ç»“ç‚¹é“¾è¡¨
+                node_left.childs.push_front(NStack.top());	//´´½¨×Ó½áµãÁ´±í
                 NStack.pop();
             }
 
-            pTree.TNode_List.push_back(node_left);			//ç§»è¿›æ ‘æ ˆ
+            pTree.TNode_List.push_back(node_left);			//ÒÆ½øÊ÷Õ»
 
-            s_now = SStack.top();	//æ›´æ–°å½“å‰çŠ¶æ€
+            s_now = SStack.top();	//¸üĞÂµ±Ç°×´Ì¬
             if (action_go_map.count(s_now) == 0 ||
                 action_go_map[s_now].count(node_left.tag) == 0) {
-                //è‹¥å¯¹åº”è¡¨æ ¼é¡¹ä¸ºç©º,åˆ™å‡ºé”™
+                //Èô¶ÔÓ¦±í¸ñÏîÎª¿Õ,Ôò³ö´í
                 err_token = t_now;
                 return State::ERROR;
             }
 
-            m_now = action_go_map[s_now][node_left.tag];	//æ›´æ–°å½“å‰åŠ¨ä½œ
-            //å…¥æ ˆæ“ä½œ
+            m_now = action_go_map[s_now][node_left.tag];	//¸üĞÂµ±Ç°¶¯×÷
+            //ÈëÕ»²Ù×÷
             SStack.push(m_now.go);
             TStack.push(node_left.tag);
             NStack.push(node_left.p);
 
             use_lastToken = true;
         }
-        else //æ¥å—
+        else //½ÓÊÜ
         {
-            pTree.RootNode = pTree.TNode_List.size() - 1;	//æ ¹ç»“ç‚¹å³ä¸ºæœ€åä¸€ä¸ªç§»è¿›æ ‘ç»“ç‚¹é›†çš„ç»“ç‚¹
+            pTree.RootNode = pTree.TNode_List.size() - 1;	//¸ù½áµã¼´Îª×îºóÒ»¸öÒÆ½øÊ÷½áµã¼¯µÄ½áµã
             return State::OK;		//accept
         }
     }
 }
-/*
+
 void LR1_Parser::printTree(ostream& out)
 {
-	if (pTree.RootNode == -1)	//æ²¡æœ‰æ ¹èŠ‚ç‚¹ï¼Œæ ‘éƒ½ä¸å­˜åœ¨ï¼Œæ²¡å¾—ç”»å’¯
+	if (pTree.RootNode == -1)	//Ã»ÓĞ¸ù½Úµã£¬Ê÷¶¼²»´æÔÚ£¬Ã»µÃ»­¿©
 		return;
 	queue<int> Q;
 	out << "digraph parser_tree{" << endl;
 	out << "rankdir=TB;" << endl;
-	//åˆå§‹åŒ–ç»“ç‚¹
+	//³õÊ¼»¯½áµã
 	for (int i = 0; i < pTree.TNode_List.size(); i++)
 	{
 		out << "node_" << i << "[label=\"" << TAG2STR.at(pTree.TNode_List[i].tag) << "\" ";
 		out << "shape=\"";
-		if (isVT(pTree.TNode_List[i].tag)) //ç»ˆç»“ç¬¦ï¼Œè“è‰²å­—ä½“ï¼Œæ— åœ†æ¡†
+		if (isVT(pTree.TNode_List[i].tag)) //ÖÕ½á·û£¬À¶É«×ÖÌå£¬ÎŞÔ²¿ò
 			out << "none\" fontcolor=\"blue\"];" << endl;
-		else                               //éç»ˆç»“ç¬¦ï¼Œé»‘è‰²å­—ä½“ï¼Œæœ‰åœ†æ¡†
+		else                               //·ÇÖÕ½á·û£¬ºÚÉ«×ÖÌå£¬ÓĞÔ²¿ò
 			out << "box\" fontcolor=\"black\"];" << endl;
 	}
 	out << endl;
 
-	Q.push(pTree.RootNode);	//æ ¹èŠ‚ç‚¹å…¥é˜Ÿåˆ—ï¼Œå³å°†å¼€å§‹BFSè¾“å‡ºè¯­æ³•æ ‘
+	Q.push(pTree.RootNode);	//¸ù½ÚµãÈë¶ÓÁĞ£¬¼´½«¿ªÊ¼BFSÊä³öÓï·¨Ê÷
 	while (!Q.empty())
 	{
-		TNode node = pTree.TNode_List[Q.front()];	//å–ç¬¬ä¸€ä¸ªç»“ç‚¹ï¼Œå¯¹å…¶è¿›è¡Œç”»æ ‘
+		TNode node = pTree.TNode_List[Q.front()];	//È¡µÚÒ»¸ö½áµã£¬¶ÔÆä½øĞĞ»­Ê÷
 		Q.pop();
 
-		if (node.childs.size() == 0)	//è‹¥æ— å­ç»“ç‚¹ï¼Œä¸ç”¨ç”»ä»–çš„å­æ ‘
+		if (node.childs.size() == 0)	//ÈôÎŞ×Ó½áµã£¬²»ÓÃ»­ËûµÄ×ÓÊ÷
 			continue;
-		//è‹¥æœ‰å­ç»“ç‚¹ï¼Œåˆ™ç”»å…¶å­æ ‘
-		for (auto it = node.childs.cbegin(); it != node.childs.cend(); it++)	//å£°æ˜è¿æ¥å…³ç³»
+		//ÈôÓĞ×Ó½áµã£¬Ôò»­Æä×ÓÊ÷
+		for (auto it = node.childs.cbegin(); it != node.childs.cend(); it++)	//ÉùÃ÷Á¬½Ó¹ØÏµ
 		{
 			out << "node_" << node.p << "->node_" << *it << ";" << endl;
 			Q.push(*it);
@@ -428,19 +428,19 @@ void LR1_Parser::printTree(ostream& out)
 	out << "}" << endl;
 	return;
 }
-
+/*
 void LR1_Parser::printVP_DFA(ostream& out)
 {
 	out << "digraph{" << endl;
 	out << "rankdir=LR;" << endl;
-	//å£°æ˜æ¯ä¸€ä¸ªé¡¹ç›®é›†
+	//ÉùÃ÷Ã¿Ò»¸öÏîÄ¿¼¯
 	for (int i = 0; i < project_set_list.size(); i++)
 	{
 		out << "node_" << i << "[label=\"";
-		//è¾“å‡ºé¡¹ç›®é›†ä¸­çš„æ¯ä¸€ä¸ªé¡¹ç›®
+		//Êä³öÏîÄ¿¼¯ÖĞµÄÃ¿Ò»¸öÏîÄ¿
 		for (const auto& gp : project_set_list[i])
 		{
-			//è¾“å‡ºäº§ç”Ÿå¼
+			//Êä³ö²úÉúÊ½
 			out << convTag2Str(productions_list[gp.id_production].left) << "->";
             int p;
             for (p = 0; p < productions_list[gp.id_production].right.size(); p++)
@@ -452,7 +452,7 @@ void LR1_Parser::printVP_DFA(ostream& out)
             if (gp.point == p)
                 out << ".";
 			out << ", ";
-			//è¾“å‡ºfollows
+			//Êä³öfollows
 			for (auto it = gp.follows.cbegin(); it != gp.follows.cend(); it++)
 			{
 				if (it != gp.follows.cbegin())
@@ -461,16 +461,16 @@ void LR1_Parser::printVP_DFA(ostream& out)
 			}
 			out << "\n";
 		}
-		//å£°æ˜ç»“ç‚¹å±æ€§
+		//ÉùÃ÷½áµãÊôĞÔ
 		out << "\" shape=\"box\"];" << endl;
 	}
 
-	//å£°æ˜è½¬ç§»å…³ç³»
+	//ÉùÃ÷×ªÒÆ¹ØÏµ
 	for (int i = 0; i < project_set_list.size(); i++)
 	{
 		for (const auto& tag_mov : action_go_map[i])
 		{
-			//åªæœ‰ç§»è¿›æ‰ä¼šè½¬ç§»
+			//Ö»ÓĞÒÆ½ø²Å»á×ªÒÆ
 			if (tag_mov.second.action_type != ActionType::shift_in)
 				continue;
 			else
@@ -484,22 +484,22 @@ void LR1_Parser::printVP_DFA(ostream& out)
 */
 void LR1_Parser::clear_all()
 {
-    //æ¸…ç©ºæ ‘
+    //Çå¿ÕÊ÷
     this->pTree.TNode_List.clear();
     this->pTree.RootNode = -1;
-    //æ¸…ç©ºgrammar_listã€first_listç­‰
+    //Çå¿Õgrammar_list¡¢first_listµÈ
     this->productions_list.clear();
     this->first_list.clear();
     this->project_set_list.clear();
     this->action_go_map.clear();
-    //æ¸…ç©ºlexerçš„æ•°æ®
+    //Çå¿ÕlexerµÄÊı¾İ
     // this->lexer.clear_data();
 }
 /*int main()
 {
 	LR1_Parser lr1;
 
-	//lr1.init(R"(D:\Mydata\homework\å¤§ä¸‰ä¸Š\è¯¾ç¨‹\ç¼–è¯‘åŸç†\å¤§ä½œä¸š\test\grammar.txt)");
+	//lr1.init(R"(D:\Mydata\homework\´óÈıÉÏ\¿Î³Ì\±àÒëÔ­Àí\´ó×÷Òµ\test\grammar.txt)");
 
 	ofstream T_out;
 	ofstream D_out;

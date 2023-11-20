@@ -15,7 +15,7 @@ State Compiler::compile()
 void Compiler::output()
 {
     parse_tree_file.open("parse_tree.txt",ios::out);
-    
+    parser.printTree(parse_tree_file);
 }
 
 

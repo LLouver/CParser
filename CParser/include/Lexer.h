@@ -9,8 +9,8 @@
 #include <fstream>
 #include <map>
 
-#include "Symbol.h"
-
+#include "symbol.h"
+#include "common.h"
 using namespace std;
 
 struct Token       //符号表
@@ -152,7 +152,7 @@ public:
 	3：记号表输出文件打开失败
 	*/
 
-	int getNextLexical(Token& next);
+	State getNextLexical(Token& next);
 	/*
 	0：读取成功
 	1：返回失败（越界）

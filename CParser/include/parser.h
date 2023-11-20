@@ -6,9 +6,9 @@
 #include <set>
 #include <vector>
 
-#include "include/common.h"
-#include "include/lexer.h"
-#include "include/symbol.h"
+#include "common.h"
+#include "lexer.h"
+#include "symbol.h"
 
 
 using std::vector;
@@ -17,23 +17,23 @@ using std::map;
 using std::list;
 using std::ostream;
 
-struct TNode	//æ ‘ç»“ç‚¹
+struct TNode	//Ê÷½áµã
 {
-	Symbol tag;	//tagå€¼
-	int p;		//æŒ‡é’ˆ
-	list<int> childs;	//å­©å­ç»“ç‚¹é›†
+	Symbol tag;	//tagÖµ
+	int p;		//Ö¸Õë
+	list<int> childs;	//º¢×Ó½áµã¼¯
 };
 
-struct PTree	//è¯­æ³•æ ‘
+struct PTree	//Óï·¨Ê÷
 {
-	vector<TNode> TNode_List;	//ç»“ç‚¹é›†åˆ
-	int RootNode = -1;				//æ ¹ç»“ç‚¹æŒ‡é’ˆ
+	vector<TNode> TNode_List;	//½áµã¼¯ºÏ
+	int RootNode = -1;				//¸ù½áµãÖ¸Õë
 };
 
 /**
- * Production(äº§ç”Ÿå¼):è¡¨ç¤ºæ–‡æ³•çš„ä¸€ä¸ªäº§ç”Ÿå¼
- * left:å·¦éƒ¨ç¬¦å·
- * right:å³éƒ¨ç¬¦å·ä¸²
+ * Production(²úÉúÊ½):±íÊ¾ÎÄ·¨µÄÒ»¸ö²úÉúÊ½
+ * left:×ó²¿·ûºÅ
+ * right:ÓÒ²¿·ûºÅ´®
  */
 struct Production
 {
@@ -41,33 +41,33 @@ struct Production
 	vector<Symbol> right;
 };
 
-enum class ActionType		//LR1åˆ†ææ—¶çš„åŠ¨ä½œæšä¸¾å€¼
+enum class ActionType		//LR1·ÖÎöÊ±µÄ¶¯×÷Ã¶¾ÙÖµ
 {
-	shift_in,	//ç§»è¿›
-	reduction,	//å½’çº¦
-	accept,		//æ¥å—
-	//ç”±äºä½¿ç”¨mapå­˜å‚¨åŠ¨ä½œ,æ•…å‡ºé”™çŠ¶æ€ä¸å†å­˜å‚¨
+	shift_in,	//ÒÆ½ø
+	reduction,	//¹éÔ¼
+	accept,		//½ÓÊÜ
+	//ÓÉÓÚÊ¹ÓÃmap´æ´¢¶¯×÷,¹Ê³ö´í×´Ì¬²»ÔÙ´æ´¢
 };
 
-struct Action		//LRåˆ†æè¡¨ä¸­çš„ä¸€é¡¹åŠ¨ä½œ
+struct Action		//LR·ÖÎö±íÖĞµÄÒ»Ïî¶¯×÷
 {
 	ActionType action_type;
-	int go;		//å½“actionä¸ºsæ—¶,è¡¨ç¤ºè½¬åˆ°çš„çŠ¶æ€;å½“actionä¸ºræ—¶,è¡¨ç¤ºä½¿ç”¨ç¬¬å‡ ä¸ªäº§ç”Ÿå¼å½’çº¦
+	int go;		//µ±actionÎªsÊ±,±íÊ¾×ªµ½µÄ×´Ì¬;µ±actionÎªrÊ±,±íÊ¾Ê¹ÓÃµÚ¼¸¸ö²úÉúÊ½¹éÔ¼
 };
 
-struct GrammarProject	//LR(1)é¡¹ç›®
+struct GrammarProject	//LR(1)ÏîÄ¿
 {
-	int id_production;			//è¯¥é¡¹ç›®çš„äº§ç”Ÿå¼æŒ‡é’ˆ,å­˜å‚¨äº§ç”Ÿå¼åœ¨vectorä¸­å¯¹åº”çš„ä¸‹æ ‡
-	int point;				//ç‚¹çš„ä½ç½®
+	int id_production;			//¸ÃÏîÄ¿µÄ²úÉúÊ½Ö¸Õë,´æ´¢²úÉúÊ½ÔÚvectorÖĞ¶ÔÓ¦µÄÏÂ±ê
+	int point;				//µãµÄÎ»ÖÃ
 	/* S->.E  point=0 */
 	/* S->E.  point=1 */
 
-	set<Symbol> follows;		//é¡¹ç›®åé¢å¯ä»¥è·Ÿéšçš„ç»ˆç»“ç¬¦
+	set<Symbol> follows;		//ÏîÄ¿ºóÃæ¿ÉÒÔ¸úËæµÄÖÕ½á·û
 	/* S->.E,#/a/b	follows={# a b} */
 
 
 	bool operator<(const GrammarProject& gp) const {
-		//å®šä¹‰æ¯”è¾ƒå‡½æ•°ä½¿å¾—GrammarProjectå¯ä»¥æ”¾å…¥setæˆ–mapä¸­.æ³¨æ„å¿…é¡»ä½¿å¾—æ’åºå›ºå®š
+		//¶¨Òå±È½Ïº¯ÊıÊ¹µÃGrammarProject¿ÉÒÔ·ÅÈëset»òmapÖĞ.×¢Òâ±ØĞëÊ¹µÃÅÅĞò¹Ì¶¨
 		if (this->id_production < gp.id_production)
 			return true;
 		else if (this->id_production > gp.id_production)
@@ -93,11 +93,11 @@ struct GrammarProject	//LR(1)é¡¹ç›®
 		}
 	}
 	bool operator==(const GrammarProject& gp) const {
-		//é‡è½½è¿ç®—ç¬¦ï¼Œæ–¹ä¾¿é¡¹ç›®é—´æ¯”è¾ƒ
+		//ÖØÔØÔËËã·û£¬·½±ãÏîÄ¿¼ä±È½Ï
 		return this->id_production == gp.id_production && this->point == gp.point && this->follows == gp.follows;
 	}
 	bool operator!=(const GrammarProject& gp) const {
-		//é‡è½½è¿ç®—ç¬¦ï¼Œæ–¹ä¾¿é¡¹ç›®é—´æ¯”è¾ƒ
+		//ÖØÔØÔËËã·û£¬·½±ãÏîÄ¿¼ä±È½Ï
 		return !(*this == gp);
 	}
 };
@@ -105,34 +105,34 @@ struct GrammarProject	//LR(1)é¡¹ç›®
 class LR1_Parser
 {
 private:
-    Lexer lexer;						//è¯æ³•åˆ†æå™¨
+    Lexer lexer;						//´Ê·¨·ÖÎöÆ÷
 
-    vector<Production> productions_list;		//æ–‡æ³•é›†åˆ
-    map<Symbol, set<Symbol>> first_list;		//éç»ˆç»“ç¬¦firsté›†
-    //map<Tag, set<Tag>> follow_list;	//éç»ˆç»“ç¬¦followé›†
-    vector<set<GrammarProject>> project_set_list;	//é¡¹ç›®é›†
-    //map<int, map<Tag, int>> state_trans_map;		//é¡¹ç›®ä¹‹é—´çš„è½¬ç§»å…³ç³»(intå­˜å‚¨é¡¹ç›®é›†çš„ä¸‹æ ‡)
-    map<int, map<Symbol, Action>> action_go_map;		//actionè¡¨å’Œgotoè¡¨,å­˜å‚¨åœ¨ä¸€èµ·
+    vector<Production> productions_list;		//ÎÄ·¨¼¯ºÏ
+    map<Symbol, set<Symbol>> first_list;		//·ÇÖÕ½á·ûfirst¼¯
+    //map<Tag, set<Tag>> follow_list;	//·ÇÖÕ½á·ûfollow¼¯
+    vector<set<GrammarProject>> project_set_list;	//ÏîÄ¿¼¯
+    //map<int, map<Tag, int>> state_trans_map;		//ÏîÄ¿Ö®¼äµÄ×ªÒÆ¹ØÏµ(int´æ´¢ÏîÄ¿¼¯µÄÏÂ±ê)
+    map<int, map<Symbol, Action>> action_go_map;		//action±íºÍgoto±í,´æ´¢ÔÚÒ»Æğ
 
-    PTree pTree;						//è¯­æ³•æ ‘
+    PTree pTree;						//Óï·¨Ê÷
 
 private:
-    State readProductionsFile(ifstream& in);	//è¯»å…¥æ–‡æ³•äº§ç”Ÿå¼
-    set<GrammarProject> getClosure(const set<GrammarProject>&);	//æ±‚CLOSUREé›†
-    int findSameProjectSet(const set<GrammarProject>&);			//æŸ¥æ‰¾ç›¸åŒçš„CLOSUREé›†ï¼Œå¤±è´¥è¿”å›-1
-    void initFirstList();		//åˆå§‹åŒ–Firsté›†
-    State initActionGotoMap();	//æ±‚è¯†åˆ«æ´»å‰ç¼€çš„DFA
+    State readProductionsFile(ifstream& in);	//¶ÁÈëÎÄ·¨²úÉúÊ½
+    set<GrammarProject> getClosure(const set<GrammarProject>&);	//ÇóCLOSURE¼¯
+    int findSameProjectSet(const set<GrammarProject>&);			//²éÕÒÏàÍ¬µÄCLOSURE¼¯£¬Ê§°Ü·µ»Ø-1
+    void initFirstList();		//³õÊ¼»¯First¼¯
+    State initActionGotoMap();	//ÇóÊ¶±ğ»îÇ°×ºµÄDFA
 
-public:		//è®°å¾—æ”¹ä¸ºprivate
+public:		//¼ÇµÃ¸ÄÎªprivate
     LR1_Parser();
     ~LR1_Parser();
 
-    State init(ifstream& grammar_productions_file);			//è¯­æ³•åˆ†æå™¨åˆå§‹åŒ–
+    State init(ifstream& grammar_productions_file);			//Óï·¨·ÖÎöÆ÷³õÊ¼»¯
 	State lex(ifstream& source_file);
-    State parse(Token&);	//è¯­æ³•åˆ†æ
-    // void printTree(ostream& out);		//æ‰“å°æ ‘
-    // void printVP_DFA(ostream& out);     //æ‰“å°DFA
-    void clear_all();                   //æ¸…é™¤ä¸Šä¸€è½®æ•°æ®
+    State parse(Token&);	//Óï·¨·ÖÎö
+    void printTree(ostream& out);		//´òÓ¡Ê÷
+    // void printVP_DFA(ostream& out);     //´òÓ¡DFA
+    void clear_all();                   //Çå³ıÉÏÒ»ÂÖÊı¾İ
 };
 
 #endif // !PARSER_H
