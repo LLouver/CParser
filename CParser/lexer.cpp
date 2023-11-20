@@ -515,11 +515,11 @@ int Lexer::start_analysis(ifstream& source_file,ofstream& debug_file)
 	return ret;
 }
 
-int Lexer::output_analysis(ofstream& debug_file)
+int Lexer::output_analysis(ofstream& of)
 {
 	//ofstream outfile_statistics;
 	//outfile_statistics.open(statistics_filename, ios::out);
-	if (!debug_file.is_open())
+	if (!of.is_open())
 		return 1;
 
 	/*ofstream outfile_result;
@@ -533,7 +533,7 @@ int Lexer::output_analysis(ofstream& debug_file)
 		return 3;
 */
 	//how_statistics(debug_file);
-	show_result(debug_file);
+	show_result(of);
 	//show_table(outfile_table);
 	cerr<<"debug info output finished\n";
 	return 0;
@@ -554,10 +554,11 @@ void Lexer::show_statistics(ofstream& outfile)
 void Lexer::show_result(ofstream& outfile)
 {
 
-	outfile << "---------------------------------"
+	/*outfile << "---------------------------------"
 			"识别结果---------------------------------" << endl;
 	outfile << "记号\t\t属性" << endl;
-
+	*/
+	
 	for (int i = 0; i < int(table.size()); i++)
 	{
 		outfile << table[i] << "\t\t" << table[i].value << endl;
@@ -623,6 +624,6 @@ void Lexer::show_table(ofstream& outfile)
 
 ostream& operator<<(ostream&o, Token r_token)
 {
-	o<<"$"<<r_token.line<<":"<<r_token.col<<","<<(int)r_token.symbol_id<<":"<<convTag2Str((Symbol)r_token.symbol_id)<<"$";
+	o<<"$"<<r_token.line<<":"<<r_token.col<<","<<(int)r_token.symbol_id<<":"<<convSymbol2Str((Symbol)r_token.symbol_id)<<"$";
 	return o;
 }

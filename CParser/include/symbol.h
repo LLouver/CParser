@@ -163,12 +163,12 @@ inline bool isVN(const Symbol t)
 	return t > Symbol::vtnboundary;
 }
 
-inline Symbol convStr2Tag(const string& s)
+inline Symbol convStr2Symbol(const string& s)
 {
 	return STR2TAG.at(s);
 }
 
-inline string convTag2Str(const Symbol& t)
+inline string convSymbol2Str(const Symbol& t)
 {
 	return TAG2STR.at(t);
 }

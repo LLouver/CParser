@@ -9,6 +9,8 @@
 #include <queue>
 
 #include "include/parser.h"
+
+#include "include/lexer_tools.h"
 #include "include/Symbol.h"
 
 using namespace std;
@@ -21,10 +23,10 @@ using namespace std;
 ********************************************************/
 ostream& operator<<(ostream& o, Production p)
 {
-	o<<convTag2Str(p.left)<<"->";
+	o<<convSymbol2Str(p.left)<<"->";
 	for(auto i = p.right.begin();i!=p.right.end();++i)
 	{
-		o<<convTag2Str(*i)<<' ';
+		o<<convSymbol2Str(*i)<<' ';
 	}
 	return o;
 }
@@ -117,11 +119,11 @@ State LR1_Parser::readProductionsFile(ifstream& in)	//读入文法产生式
 			Production new_grammar;
 			ss >> temp;
 			//cerr<<"read:"<<temp<<endl;
-			new_grammar.left = convStr2Tag(temp);
+			new_grammar.left = convStr2Symbol(temp);
 			ss >> temp;
 			//cerr<<"read:"<<temp<<endl;
 			while (ss >> temp)
-				new_grammar.right.push_back(convStr2Tag(temp));
+				new_grammar.right.push_back(convStr2Symbol(temp));
 			productions_list.push_back(new_grammar);
 			//cerr<<(new_grammar)<<endl;
 		}
@@ -160,13 +162,32 @@ State LR1_Parser::lex(ifstream& source_file, ofstream&of)
 		cerr<<"analysis ret returned "<<ret<<endl;
 		return State::ERROR;
 	}
-	ofstream out("lexer_out.txt",ios::out);
-	if(ret=lexer.output_analysis(out))
+	if(ret=lexer.output_analysis(of))
 	{
 		cerr<<"output ret returned "<<ret<<endl;
 		return State::ERROR;
 	}
 	return State::OK;
+}
+
+void LR1_Parser::print_parse_state(ofstream& of, const int& state_top, const Symbol& symbol_top,
+	const Token& token, const Action& action)
+{
+	of<<"<tr>";
+	of<<"<td>"<<state_top<<"</td>";
+	of<<"<td>"<<convSymbol2Str(symbol_top)<<"</td>";
+	of<<"<td>"<<convSymbol2Str(token.symbol_id)<<"</td>";
+	switch (action.action_type) {
+	case ActionType::shift_in:
+		of<<"<td>"<<"shift_in and move to " << action.go<<"</td>";
+		break;
+	case ActionType::reduction:
+		of<<"<td>"<<"reduce with production "<< action.go<<"</td>";
+		break;
+	case  ActionType::accept:
+		of<<"<td>"<<"accept"<<"</td>";
+	}
+	of<<"</tr>\n";
 }
 
 void LR1_Parser::initFirstList()
@@ -391,6 +412,12 @@ State LR1_Parser::parse(Token& err_token, ofstream&of)
     Token t_now;	//当前token
     int s_now;		//当前state
     Action m_now;	//当前动作
+
+	of << "<table>\n<thead>\n<tr>";
+	of<<"<th>state Top</th><th>Symbol Top</th><th>input</th><th>action</th>";
+	of<<"</tr></thead>\n<tbody>";
+	
+	
     while (true) {
         //需要新获取一个token
         if (!use_lastToken) {
@@ -406,6 +433,7 @@ State LR1_Parser::parse(Token& err_token, ofstream&of)
         }
         m_now = action_go_map[s_now][t_now.symbol_id];	//获取当前动作
             //移进
+    	print_parse_state(of,SStack.top(),TStack.top(),t_now,m_now);
         if (m_now.action_type == ActionType::shift_in) {
             SStack.push(m_now.go);
             TStack.push(t_now.symbol_id);
@@ -455,7 +483,8 @@ State LR1_Parser::parse(Token& err_token, ofstream&of)
         else //接受
         {
             pTree.RootNode = pTree.TNode_List.size() - 1;	//根结点即为最后一个移进树结点集的结点
-            return State::OK;		//accept
+        	of<<"</tbody></table>\n";
+        	return State::OK;		//accept
         }
     }
 }

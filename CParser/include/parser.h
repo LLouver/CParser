@@ -5,7 +5,7 @@
 #include <map>
 #include <set>
 #include <vector>
-
+#include <stack>
 #include "common.h"
 #include "lexer.h"
 #include "symbol.h"
@@ -15,6 +15,7 @@ using std::vector;
 using std::set;
 using std::map;
 using std::list;
+using std::stack;
 using std::ostream;
 
 struct TNode	//树结点
@@ -132,6 +133,7 @@ public:		//记得改为private
     void print_LR_table(ofstream& of);
     State init(ifstream& grammar_productions_file,ofstream& output_file);			//语法分析器初始化
 	State lex(ifstream& source_file,ofstream& output_file);
+    void print_parse_state(ofstream&of, const int& stack, const Symbol& t_stack, const Token& token, const Action& action);
     State parse(Token&, ofstream& output_file);	//语法分析
     void printTree(ostream& out);		//打印树
     void clear_all();                   //清除上一轮数据
