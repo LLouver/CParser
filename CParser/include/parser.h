@@ -20,7 +20,7 @@ using std::ostream;
 
 struct TNode	//树结点
 {
-	Symbol tag;	//tag值
+	Symbol symbol;	//tag值
 	int p;		//指针
 	list<int> childs;	//孩子结点集
 };
@@ -135,7 +135,8 @@ public:		//记得改为private
 	State lex(ifstream& source_file,ofstream& output_file);
     void print_parse_state(ofstream&of, const int& stack, const Symbol& t_stack, const Token& token, const Action& action);
     State parse(Token&, ofstream& output_file);	//语法分析
-    void printTree(ostream& out);		//打印树
+    void printTreeNode(ofstream&of, const int node_id);
+    void printTree(ofstream& of);		//打印树
     void clear_all();                   //清除上一轮数据
 };
 

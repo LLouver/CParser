@@ -439,7 +439,7 @@ State LR1_Parser::parse(Token& err_token, ofstream&of)
             TStack.push(t_now.symbol_id);
 
             TNode node_in;	//移进的树结点
-            node_in.tag = t_now.symbol_id;	//初始化tag值
+            node_in.symbol = t_now.symbol_id;	//初始化tag值
             node_in.p = pTree.TNode_List.size();	//指定树节点在TNode_List中的下标
             pTree.TNode_List.push_back(node_in);	//移进树结点
             NStack.push(node_in.p);					//将树节点下标移进树栈（保证栈内结点和TNode_List中的结点一一对应）
@@ -450,7 +450,7 @@ State LR1_Parser::parse(Token& err_token, ofstream&of)
             int len = productions_list[m_now.go].right.size();	//产生式右部长度
 
             TNode node_left;								//产生式左部
-            node_left.tag = productions_list[m_now.go].left;	//产生式左部tag
+            node_left.symbol = productions_list[m_now.go].left;	//产生式左部tag
             node_left.p = pTree.TNode_List.size();			//移进树结点
 
             //移出栈
@@ -466,16 +466,16 @@ State LR1_Parser::parse(Token& err_token, ofstream&of)
 
             s_now = SStack.top();	//更新当前状态
             if (action_go_map.count(s_now) == 0 ||
-                action_go_map[s_now].count(node_left.tag) == 0) {
+                action_go_map[s_now].count(node_left.symbol) == 0) {
                 //若对应表格项为空,则出错
                 err_token = t_now;
                 return State::ERROR;
             }
 
-            m_now = action_go_map[s_now][node_left.tag];	//更新当前动作
+            m_now = action_go_map[s_now][node_left.symbol];	//更新当前动作
             //入栈操作
             SStack.push(m_now.go);
-            TStack.push(node_left.tag);
+            TStack.push(node_left.symbol);
             NStack.push(node_left.p);
 
             use_lastToken = true;
@@ -489,7 +489,28 @@ State LR1_Parser::parse(Token& err_token, ofstream&of)
     }
 }
 
-void LR1_Parser::printTree(ostream& out)
+void LR1_Parser::printTreeNode(ofstream &of, const int node_id)
+{
+	TNode node = pTree.TNode_List[node_id];
+	of<<"\"data\":" << "\""<< convSymbol2Str(node.symbol) << "\",";
+	of<<"\"children\":[\n";
+	auto i = node.childs.cbegin();
+	if(i!= node.childs.cend())
+	{
+		of<<"{\n";
+		printTreeNode(of,*i);
+		of<<"}";
+		for (i++; i != node.childs.cend(); i++)
+		{
+			of<<",\n{";
+			printTreeNode(of,*i);
+			of<<"}";
+		}
+	}
+	of<<"]";
+}
+
+void LR1_Parser::printTree(ofstream& of)
 {
 	if (pTree.RootNode == -1)
 	{
@@ -497,38 +518,13 @@ void LR1_Parser::printTree(ostream& out)
 		cerr<<"nothing to output!"<<endl;
 		return;
 	}
-	queue<int> Q;
-	out << "digraph parser_tree{" << endl;
-	out << "rankdir=TB;" << endl;
+	stack<int> Q;
+	//out << "digraph parser_tree{" << endl;
+	// out << "rankdir=TB;" << endl;
 	//初始化结点
-	for (int i = 0; i < pTree.TNode_List.size(); i++)
-	{
-		out << "node_" << i << "[label=\"" << TAG2STR.at(pTree.TNode_List[i].tag) << "\" ";
-		out << "shape=\"";
-		if (isVT(pTree.TNode_List[i].tag)) //终结符，蓝色字体，无圆框
-			out << "none\" fontcolor=\"blue\"];" << endl;
-		else                               //非终结符，黑色字体，有圆框
-			out << "box\" fontcolor=\"black\"];" << endl;
-	}
-	out << endl;
-
-	Q.push(pTree.RootNode);	//根节点入队列，即将开始BFS输出语法树
-	while (!Q.empty())
-	{
-		TNode node = pTree.TNode_List[Q.front()];	//取第一个结点，对其进行画树
-		Q.pop();
-
-		if (node.childs.size() == 0)	//若无子结点，不用画他的子树
-			continue;
-		//若有子结点，则画其子树
-		for (auto it = node.childs.cbegin(); it != node.childs.cend(); it++)	//声明连接关系
-		{
-			out << "node_" << node.p << "->node_" << *it << ";" << endl;
-			Q.push(*it);
-		}
-	}
-
-	out << "}" << endl;
+	of<<"{\n";
+	printTreeNode(of, pTree.RootNode);
+	of<<"}";
 	return;
 }
 /*
@@ -598,6 +594,8 @@ void LR1_Parser::clear_all()
     //清空lexer的数据
     // this->lexer.clear_data();
 }
+
+
 
 /*int main()
 {
