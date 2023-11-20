@@ -1,4 +1,4 @@
-﻿program -> dec_list
+program -> dec_list
 dec_list -> dec
 dec_list -> dec dec_list
 dec -> int id dec_type

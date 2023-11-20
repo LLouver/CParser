@@ -1,5 +1,7 @@
 #include "include/compiler.h"
 
+#include "include/lexer_tools.h"
+
 using namespace std;
 void Compiler::init()
 {
@@ -9,6 +11,10 @@ void Compiler::init()
 
 State Compiler::compile()
 {
+    parser.init(grammar_productions_file);
+    parser.lex(sources_file);
+    Token r_token;
+    parser.parse(r_token);
     return State::OK;
 }
 

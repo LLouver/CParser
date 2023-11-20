@@ -54,8 +54,10 @@ LR1_Parser::~LR1_Parser()
 
 State LR1_Parser::readProductionsFile(ifstream& in)	//读入文法产生式
 {
-	if (!in.is_open())
+	if (!in.is_open()){
+		std::cerr<<"grammar_productions_file open failed!"<<endl; 
 		return State::ERROR;
+	}
 
 	productions_list.push_back({ Symbol::S0,{} });
 	char buffer[1024];
@@ -65,8 +67,10 @@ State LR1_Parser::readProductionsFile(ifstream& in)	//读入文法产生式
 			istringstream ss(buffer);
 			Production new_grammar;
 			ss >> temp;
+			cerr<<"read:"<<temp<<endl;
 			new_grammar.left = convStr2Tag(temp);
 			ss >> temp;
+			cerr<<"read:"<<temp<<endl;
 			while (ss >> temp)
 				new_grammar.right.push_back(convStr2Tag(temp));
 			productions_list.push_back(new_grammar);

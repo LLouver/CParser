@@ -13,14 +13,14 @@
 #include "common.h"
 using namespace std;
 
-struct Token       //ç¬¦å·è¡¨
+struct Token       //·ûºÅ±í
 {
-	Symbol symbol_id = static_cast<Symbol>(0);       //ç±»åˆ«ç¼–ç 
-	int index = 0;          //è¡¨ä¸­ä½ç½®
-	string value = "-";             //å±æ€§å€¼(æ ‡è¯†ç¬¦ï¼Œå¸¸æ•°çš„å±æ€§æ˜¯å…¶æœ¬èº«ï¼Œå…¶ä»–ä¸‰ç±»ç¬¦å·å”¯ä¸€)
+	Symbol symbol_id = static_cast<Symbol>(0);       //Àà±ğ±àÂë
+	int index = 0;          //±íÖĞÎ»ÖÃ
+	string value = "-";             //ÊôĞÔÖµ(±êÊ¶·û£¬³£ÊıµÄÊôĞÔÊÇÆä±¾Éí£¬ÆäËûÈıÀà·ûºÅÎ¨Ò»)
 
-	int line;                //è¡Œ
-	int col;                //åˆ—
+	int line;                //ĞĞ
+	int col;                //ÁĞ
 
 	Token(int c, int i, int r, int co, string v = "-")
 	{
@@ -43,9 +43,9 @@ struct Token       //ç¬¦å·è¡¨
 class Statistics
 {
 private:
-	int ch;         //å­—ç¬¦æ€»æ•°(åªç»Ÿè®¡éç©ºä¸”æœ‰æ„ä¹‰çš„å­—ç¬¦)
-	int line;        //è¡Œæ•°
-	int id, num, key, op, bound;    //å„ç±»å•è¯çš„ä¸ªæ•°
+	int ch;         //×Ö·û×ÜÊı(Ö»Í³¼Æ·Ç¿ÕÇÒÓĞÒâÒåµÄ×Ö·û)
+	int line;        //ĞĞÊı
+	int id, num, key, op, bound;    //¸÷Ààµ¥´ÊµÄ¸öÊı
 public:
 	Statistics()
 	{
@@ -113,20 +113,20 @@ public:
 
 class Lexer {
 private:
-	string input_filename;//è¾“å…¥æ–‡ä»¶è·¯å¾„
-	string result_filename;//å…·ä½“ç»“æœè¾“å‡ºæ–‡ä»¶è·¯å¾„
-	string statistics_filename;//ç»Ÿè®¡ç»“æœè¾“å‡ºæ–‡ä»¶è·¯å¾„
-	string table_filename;//è®°å·è¡¨è¾“å‡ºæ–‡ä»¶è·¯å¾„
-	string errors_filename;//é”™è¯¯è®°å½•è¾“å‡ºæ–‡ä»¶è·¯å¾„
+	string input_filename;//ÊäÈëÎÄ¼şÂ·¾¶
+	string result_filename;//¾ßÌå½á¹ûÊä³öÎÄ¼şÂ·¾¶
+	string statistics_filename;//Í³¼Æ½á¹ûÊä³öÎÄ¼şÂ·¾¶
+	string table_filename;//¼ÇºÅ±íÊä³öÎÄ¼şÂ·¾¶
+	string errors_filename;//´íÎó¼ÇÂ¼Êä³öÎÄ¼şÂ·¾¶
 
-	vector<Token> table;        //å­˜å‚¨æ‰€æœ‰è¯†åˆ«åˆ°çš„åˆæ³•ç¬¦å·(ä¸²)
-	Statistics sta;             //å­˜å‚¨ç»Ÿè®¡æ•°æ®
+	vector<Token> table;        //´æ´¢ËùÓĞÊ¶±ğµ½µÄºÏ·¨·ûºÅ(´®)
+	Statistics sta;             //´æ´¢Í³¼ÆÊı¾İ
 
-	int count;     //å·²ç»è¿”å›åˆ°äº†å“ªä¸ªtable
+	int count;     //ÒÑ¾­·µ»Øµ½ÁËÄÄ¸ötable
 
-	void show_statistics(ofstream& outfile);      //è¾“å‡ºç»Ÿè®¡ç»“æœ
-	void show_result(ofstream& outfile);          //è¾“å‡ºè¯†åˆ«ç»“æœ
-	void show_table(ofstream& outfile);           //è¾“å‡ºè®°å·è¡¨
+	void show_statistics(ofstream& outfile);      //Êä³öÍ³¼Æ½á¹û
+	void show_result(ofstream& outfile);          //Êä³öÊ¶±ğ½á¹û
+	void show_table(ofstream& outfile);           //Êä³ö¼ÇºÅ±í
 public:
 	Lexer()
 	{
@@ -139,23 +139,23 @@ public:
 
 	int start_analysis(ifstream& source_file);
 	/*
-	0ï¼šæ­£å¸¸è¿è¡Œ
-	1ï¼šè¾“å…¥æ–‡ä»¶æ‰“å¼€å¤±è´¥
-	2ï¼šé”™è¯¯è¾“å‡ºæ–‡ä»¶æ‰“å¼€å¤±è´¥
-	3ï¼šè¯æ³•åˆ†æå‡ºé”™
+	0£ºÕı³£ÔËĞĞ
+	1£ºÊäÈëÎÄ¼ş´ò¿ªÊ§°Ü
+	2£º´íÎóÊä³öÎÄ¼ş´ò¿ªÊ§°Ü
+	3£º´Ê·¨·ÖÎö³ö´í
 	*/
 	int output_analysis();
 	/*
-	0ï¼šè¾“å‡ºæ­£å¸¸
-	1ï¼šç»Ÿè®¡ç»“æœæ–‡ä»¶æ‰“å¼€å¤±è´¥
-	2ï¼šå…·ä½“æ–‡ä»¶æ‰“å¼€å¤±è´¥
-	3ï¼šè®°å·è¡¨è¾“å‡ºæ–‡ä»¶æ‰“å¼€å¤±è´¥
+	0£ºÊä³öÕı³£
+	1£ºÍ³¼Æ½á¹ûÎÄ¼ş´ò¿ªÊ§°Ü
+	2£º¾ßÌåÎÄ¼ş´ò¿ªÊ§°Ü
+	3£º¼ÇºÅ±íÊä³öÎÄ¼ş´ò¿ªÊ§°Ü
 	*/
 
 	State getNextLexical(Token& next);
 	/*
-	0ï¼šè¯»å–æˆåŠŸ
-	1ï¼šè¿”å›å¤±è´¥ï¼ˆè¶Šç•Œï¼‰
+	0£º¶ÁÈ¡³É¹¦
+	1£º·µ»ØÊ§°Ü£¨Ô½½ç£©
 	*/
 	Statistics get_sta();
 	//vector<Table>* get_table();

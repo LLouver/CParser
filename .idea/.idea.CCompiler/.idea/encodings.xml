@@ -2,6 +2,7 @@
 <project version="4">
   <component name="Encoding" addBOMForNewFiles="with BOM under Windows, with no BOM otherwise">
     <file url="file://$PROJECT_DIR$/CParser/compiler.cpp" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/CParser/grammar.txt" charset="GBK" />
     <file url="file://$PROJECT_DIR$/CParser/include/common.h" charset="GBK" />
     <file url="file://$PROJECT_DIR$/CParser/include/compiler.h" charset="GBK" />
     <file url="file://$PROJECT_DIR$/CParser/include/lexer.h" charset="GBK" />
