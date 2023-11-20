@@ -394,7 +394,11 @@ int Lexer::start_analysis(ifstream& source_file,ofstream& debug_file)
 							get_char();
 						}
 						else
-							category = get_op(chtemp);
+						{
+							string tmp;
+							tmp+=chtemp;
+							category = get_op(tmp);
+						}
 						retract();
 						sta.add_op();
 						table.push_back(Token(category, 0, sta.get_row(), count_col));
@@ -523,8 +527,8 @@ int Lexer::output_analysis(ofstream& debug_file)
 	if (!outfile_table.is_open())
 		return 3;
 */
-	show_statistics(debug_file);
-	//show_result(outfile_result);
+	//how_statistics(debug_file);
+	show_result(debug_file);
 	//show_table(outfile_table);
 	cerr<<"debug info output finished\n";
 	return 0;
@@ -551,7 +555,7 @@ void Lexer::show_result(ofstream& outfile)
 
 	for (int i = 0; i < int(table.size()); i++)
 	{
-		outfile << (int)table[i].symbol_id << "\t\t" << table[i].value << endl;
+		outfile << table[i] << "\t\t" << table[i].value << endl;
 	}
 
 	outfile.close();

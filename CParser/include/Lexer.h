@@ -39,6 +39,7 @@ struct Token       //符号表
 		col = 0;
 	}
 };
+ostream& operator<<(ostream&o, Token r_token);
 
 class Statistics
 {
@@ -137,14 +138,14 @@ public:
 	bool set_table(string s);
 	bool set_errors(string s);
 
-	int start_analysis(ifstream& source_file);
+	int start_analysis(ifstream& source_file,ofstream& debug_file);
 	/*
 	0：正常运行
 	1：输入文件打开失败
 	2：错误输出文件打开失败
 	3：词法分析出错
 	*/
-	int output_analysis();
+	int output_analysis(ofstream& debug_file);
 	/*
 	0：输出正常
 	1：统计结果文件打开失败
