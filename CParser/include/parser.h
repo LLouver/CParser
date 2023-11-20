@@ -106,6 +106,7 @@ struct GrammarProject	//LR(1)项目
 class LR1_Parser
 {
 private:
+private:
     Lexer lexer;						//词法分析器
 
     vector<Production> productions_list;		//文法集合
@@ -128,11 +129,11 @@ public:		//记得改为private
     LR1_Parser();
     ~LR1_Parser();
 
-    State init(ifstream& grammar_productions_file);			//语法分析器初始化
-	State lex(ifstream& source_file);
-    State parse(Token&);	//语法分析
+    void print_LR_table(ofstream& of);
+    State init(ifstream& grammar_productions_file,ofstream& output_file);			//语法分析器初始化
+	State lex(ifstream& source_file,ofstream& output_file);
+    State parse(Token&, ofstream& output_file);	//语法分析
     void printTree(ostream& out);		//打印树
-    // void printVP_DFA(ostream& out);     //打印DFA
     void clear_all();                   //清除上一轮数据
 };
 

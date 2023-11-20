@@ -623,6 +623,6 @@ void Lexer::show_table(ofstream& outfile)
 
 ostream& operator<<(ostream&o, Token r_token)
 {
-	o<<"$"<<r_token.line<<":"<<r_token.col<<","<<(int)r_token.symbol_id<<":"<<convTag2Str((Symbol)r_token.symbol_id)<<"$\n";
+	o<<"$"<<r_token.line<<":"<<r_token.col<<","<<(int)r_token.symbol_id<<":"<<convTag2Str((Symbol)r_token.symbol_id)<<"$";
 	return o;
 }

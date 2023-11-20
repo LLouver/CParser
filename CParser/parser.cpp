@@ -60,6 +60,47 @@ LR1_Parser::~LR1_Parser()
 {
 }
 
+void LR1_Parser::print_LR_table(ofstream& of)
+{
+	char s[1024];
+	of << "<table>\n<thead>\n<td>";
+	of<<"<th>state</th>";
+	for(auto i = TAG2STR.begin();i!=TAG2STR.end();++i)
+	{
+		of<<"<th>"<<(*i).second<<"</th>";
+	}
+	of<<"</td></thead>\n<tbody>";
+	for(auto i = action_go_map.begin(); i != action_go_map.end(); ++i)
+	{
+		of<<"<tr>";
+		of<<"<td>"<< i->first <<"</td>";
+		for(auto j = TAG2STR.begin();j!=TAG2STR.end();++j)
+		{
+			auto k = i->second.find(j->first);
+			of<<"<td>";
+			if(k != i->second.end())
+			{
+				const Action a = k->second;
+				switch (a.action_type)
+				{
+				case ActionType::shift_in:
+					of<<"s"<<a.go;
+					break;
+				case ActionType::reduction:
+					of<<"r"<<a.go;
+					break;
+				case ActionType::accept:
+					of<<"acc";
+					break;
+				}
+			}
+			of<<"</td>";
+		}
+		of<<"</tr>\n";
+	}
+	of<<"</tbody></table>\n";
+}
+
 State LR1_Parser::readProductionsFile(ifstream& in)	//读入文法产生式
 {
 	if (!in.is_open()){
@@ -93,7 +134,7 @@ State LR1_Parser::readProductionsFile(ifstream& in)	//读入文法产生式
 	return State::OK;
 }
 
-State LR1_Parser::init(ifstream& grammar_productions_file)
+State LR1_Parser::init(ifstream& grammar_productions_file, ofstream&of)
 {
 	if (readProductionsFile(grammar_productions_file) != State::OK)
 	{
@@ -101,10 +142,16 @@ State LR1_Parser::init(ifstream& grammar_productions_file)
 		return State::ERROR;
 	}
 	initFirstList();
-	return initActionGotoMap();
+	State ret = initActionGotoMap();
+	if(ret == State::OK)
+	{
+		//打印LR分析表
+		print_LR_table(of);
+	}
+	return ret;
 }
 
-State LR1_Parser::lex(ifstream& source_file)
+State LR1_Parser::lex(ifstream& source_file, ofstream&of)
 {
 	int ret;
 	ofstream debug("debug.txt",ios::out);
@@ -323,7 +370,6 @@ State LR1_Parser::initActionGotoMap()
 
 		++new_index;	//处理下一个项目集的转移关系
 	}
-
 	return State::OK;
 }
 
@@ -331,11 +377,9 @@ State LR1_Parser::initActionGotoMap()
 * parser里我直接调用了getNextLexical函数，但是lexer此时并没有为其指明文件路径file_in，可以在parser的构造函数里指明一下
 * 归约的时候可以构造语法树，这里先空了，等我们商量好再加进去，嘿
 **********************************************************************************************************************/
-State LR1_Parser::parse(Token& err_token)
+State LR1_Parser::parse(Token& err_token, ofstream&of)
 {
     err_token.line = err_token.col = 0;
-    
-
     stack<int> SStack;	//状态栈
     stack<Symbol> TStack;	//输入栈
     stack<int> NStack;  //树结点栈，存放树节点下标
@@ -343,7 +387,6 @@ State LR1_Parser::parse(Token& err_token)
     SStack.push(0);		//初始化
     TStack.push(Symbol::the_end);	//初始化
     //NStack.push(-1);			//初始化
-
     bool use_lastToken = false;	//判断是否使用上次的token
     Token t_now;	//当前token
     int s_now;		//当前state
@@ -526,6 +569,7 @@ void LR1_Parser::clear_all()
     //清空lexer的数据
     // this->lexer.clear_data();
 }
+
 /*int main()
 {
 	LR1_Parser lr1;
