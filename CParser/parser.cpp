@@ -19,7 +19,15 @@ using namespace std;
 * zcgg好帅!
 *
 ********************************************************/
-
+ostream& operator<<(ostream& o, Production p)
+{
+	o<<convTag2Str(p.left)<<"->";
+	for(auto i = p.right.begin();i!=p.right.end();++i)
+	{
+		o<<convTag2Str(*i)<<' ';
+	}
+	return o;
+}
 
 LR1_Parser::LR1_Parser()
 {
@@ -67,15 +75,17 @@ State LR1_Parser::readProductionsFile(ifstream& in)	//读入文法产生式
 			istringstream ss(buffer);
 			Production new_grammar;
 			ss >> temp;
-			cerr<<"read:"<<temp<<endl;
+			//cerr<<"read:"<<temp<<endl;
 			new_grammar.left = convStr2Tag(temp);
 			ss >> temp;
-			cerr<<"read:"<<temp<<endl;
+			//cerr<<"read:"<<temp<<endl;
 			while (ss >> temp)
 				new_grammar.right.push_back(convStr2Tag(temp));
 			productions_list.push_back(new_grammar);
+			//cerr<<(new_grammar)<<endl;
 		}
 		productions_list[0].right.push_back(productions_list[1].left);	//构造拓广文法
+		//cerr<<(*(productions_list.end()-1))<<endl;
 	}
 	catch (const std::exception& e) {
 		return State::ERROR;
@@ -96,6 +106,19 @@ State LR1_Parser::init(ifstream& grammar_productions_file)
 
 State LR1_Parser::lex(ifstream& source_file)
 {
+	int ret;
+	ofstream debug("debug.txt",ios::out);
+	if(ret=lexer.start_analysis(source_file,debug))
+	{
+		cerr<<"analysis ret returned "<<ret<<endl;
+		return State::ERROR;
+	}
+	ofstream out("lexer_out.txt",ios::out);
+	if(ret=lexer.output_analysis(out))
+	{
+		cerr<<"output ret returned "<<ret<<endl;
+		return State::ERROR;
+	}
 	return State::OK;
 }
 
@@ -396,8 +419,12 @@ State LR1_Parser::parse(Token& err_token)
 
 void LR1_Parser::printTree(ostream& out)
 {
-	if (pTree.RootNode == -1)	//没有根节点，树都不存在，没得画咯
+	if (pTree.RootNode == -1)
+	{
+		//没有根节点，树都不存在，没得画咯
+		cerr<<"nothing to output!"<<endl;
 		return;
+	}
 	queue<int> Q;
 	out << "digraph parser_tree{" << endl;
 	out << "rankdir=TB;" << endl;

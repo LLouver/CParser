@@ -13,6 +13,7 @@
     <file url="file://$PROJECT_DIR$/CParser/lexer_tools.cpp" charset="GBK" />
     <file url="file://$PROJECT_DIR$/CParser/main.cpp" charset="GBK" />
     <file url="file://$PROJECT_DIR$/CParser/parser.cpp" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/CParser/source1.c" charset="GBK" />
     <file url="file://$PROJECT_DIR$/CParser/symbol.cpp" charset="GBK" />
   </component>
 </project>

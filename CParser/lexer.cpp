@@ -72,26 +72,27 @@ State Lexer::getNextLexical(Token& next)
 {
 	if (count >= table.size())
 		return State::ERROR;
-
+	// .. s=(Symbol)0;
 	next = table[count];
 	count++;
+	cerr<<"put a token"<< next;
 	return State::OK;
 }
 
-int Lexer::start_analysis(ifstream& source_file)
+int Lexer::start_analysis(ifstream& source_file,ofstream& debug_file)
 {
 	int ret = 0;
 	Id.clear();
 	Number.clear();
 	character = ' ';          //进行必要的初始化
 
-	source_file.open(input_filename);
+	//source_file.open(input_filename);
 	if (!source_file.is_open())
 		return 1;
 
-	ofstream outfile_errors;
-	outfile_errors.open(errors_filename, ios::out);
-	if (!outfile_errors.is_open())
+	// ofstream outfile_errors;
+	// outfile_errors.open(errors_filename, ios::out);
+	if (!debug_file.is_open())
 		return 2;
 
 	while (getline(source_file, buffer))    //从文件按行读入缓冲区
@@ -198,7 +199,7 @@ int Lexer::start_analysis(ifstream& source_file)
 							get_char();
 						}
 						retract();
-						outfile_errors << "Error (line " << sta.get_row() << ") : there is a illegal string " << "\"" << token << "\"" << endl;
+						debug_file << "Error (line " << sta.get_row() << ") : there is a illegal string " << "\"" << token << "\"" << endl;
 						ret = 3;
 					}
 					token = "";
@@ -493,7 +494,7 @@ int Lexer::start_analysis(ifstream& source_file)
 				{
 					token += character;
 					sta.add_ch();
-					outfile_errors << "Error (line " << sta.get_row() << ") : there is a unrecognizable character. " << "\"" << token << "\"" << endl;
+					debug_file << "Error (line " << sta.get_row() << ") : there is a unrecognizable character. " << "\"" << token << "\"" << endl;
 					ret = 3;
 					token = "";
 					state = 0;
@@ -501,18 +502,18 @@ int Lexer::start_analysis(ifstream& source_file)
 			}
 		}
 	}
-	outfile_errors.close();
+	debug_file.close();
 	return ret;
 }
 
-int Lexer::output_analysis()
+int Lexer::output_analysis(ofstream& debug_file)
 {
-	ofstream outfile_statistics;
-	outfile_statistics.open(statistics_filename, ios::out);
-	if (!outfile_statistics.is_open())
+	//ofstream outfile_statistics;
+	//outfile_statistics.open(statistics_filename, ios::out);
+	if (!debug_file.is_open())
 		return 1;
 
-	ofstream outfile_result;
+	/*ofstream outfile_result;
 	outfile_result.open(result_filename, ios::out);
 	if (!outfile_result.is_open())
 		return 2;
@@ -521,11 +522,11 @@ int Lexer::output_analysis()
 	outfile_table.open(table_filename, ios::out);
 	if (!outfile_table.is_open())
 		return 3;
-
-	show_statistics(outfile_statistics);
-	show_result(outfile_result);
-	show_table(outfile_table);
-
+*/
+	show_statistics(debug_file);
+	//show_result(outfile_result);
+	//show_table(outfile_table);
+	cerr<<"debug info output finished\n";
 	return 0;
 }
 
@@ -609,4 +610,10 @@ void Lexer::show_table(ofstream& outfile)
 	{
 		outfile << temp->first << "\t\t2\t\t" << temp->second << endl;
 	}
+}
+
+ostream& operator<<(ostream&o, Token r_token)
+{
+	o<<"$"<<r_token.line<<":"<<r_token.col<<","<<(int)r_token.symbol_id<<":"<<convTag2Str((Symbol)r_token.symbol_id)<<"$\n";
+	return o;
 }

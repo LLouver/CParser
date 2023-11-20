@@ -40,6 +40,7 @@ struct Production
 	Symbol left;
 	vector<Symbol> right;
 };
+ostream& operator<<(ostream& o, Production p);
 
 enum class ActionType		//LR1分析时的动作枚举值
 {
