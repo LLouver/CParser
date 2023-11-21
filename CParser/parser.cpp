@@ -15,12 +15,6 @@
 
 using namespace std;
 
-/********************************************************
-* @Author : LeeQueue & Gao
-*
-* zcgg好帅!
-*
-********************************************************/
 ostream& operator<<(ostream& o, Production p)
 {
 	o<<convSymbol2Str(p.left)<<"->";
@@ -29,37 +23,6 @@ ostream& operator<<(ostream& o, Production p)
 		o<<convSymbol2Str(*i)<<' ';
 	}
 	return o;
-}
-
-LR1_Parser::LR1_Parser()
-{
-	//grammar_list = {
-	//	/*{Tag::E,{Tag::T,Tag::E1}},
-	//	{Tag::E1,{Tag::sb_add,Tag::T,Tag::E1}},
-	//	{Tag::E1,{Tag::epsilon}},
-	//	{Tag::T,{Tag::F,Tag::T1}},
-	//	{Tag::T1,{Tag::sb_time,Tag::F,Tag::T1}},
-	//	{Tag::T1,{Tag::epsilon}},
-	//	{Tag::F,{Tag::sb_llb,Tag::E,Tag::sb_rlb}},
-	//	{Tag::F,{Tag::id}},*/
-
-
-	//	////测试用例: S'->S,S->BB,B->aB,B->b
-	//	//{Tag::S0,{Tag::S}},
-	//	//{Tag::S,{Tag::B,Tag::B}},
-	//	//{Tag::B,{Tag::a,Tag::B}},
-	//	//{Tag::B,{Tag::b}},
-
-	//	//测试用例: S'->S,S->BB,B->b,B->空
-	//	{Tag::S0,{Tag::S}},
-	//	{Tag::S,{Tag::B,Tag::B}},
-	//	{Tag::B,{Tag::b}},
-	//	{Tag::B,{}},
-	//};
-}
-
-LR1_Parser::~LR1_Parser()
-{
 }
 
 void LR1_Parser::print_LR_table(ofstream& of)
@@ -394,10 +357,6 @@ State LR1_Parser::initActionGotoMap()
 	return State::OK;
 }
 
-/*********************************************************************************************************************
-* parser里我直接调用了getNextLexical函数，但是lexer此时并没有为其指明文件路径file_in，可以在parser的构造函数里指明一下
-* 归约的时候可以构造语法树，这里先空了，等我们商量好再加进去，嘿
-**********************************************************************************************************************/
 State LR1_Parser::parse(Token& err_token, ofstream&of)
 {
     err_token.line = err_token.col = 0;
@@ -527,60 +486,7 @@ void LR1_Parser::printTree(ofstream& of)
 	of<<"}";
 	return;
 }
-/*
-void LR1_Parser::printVP_DFA(ostream& out)
-{
-	out << "digraph{" << endl;
-	out << "rankdir=LR;" << endl;
-	//声明每一个项目集
-	for (int i = 0; i < project_set_list.size(); i++)
-	{
-		out << "node_" << i << "[label=\"";
-		//输出项目集中的每一个项目
-		for (const auto& gp : project_set_list[i])
-		{
-			//输出产生式
-			out << convTag2Str(productions_list[gp.id_production].left) << "->";
-            int p;
-            for (p = 0; p < productions_list[gp.id_production].right.size(); p++)
-			{
-				if (gp.point == p)
-					out << ".";
-				out << convTag2Str(productions_list[gp.id_production].right[p]);
-			}
-            if (gp.point == p)
-                out << ".";
-			out << ", ";
-			//输出follows
-			for (auto it = gp.follows.cbegin(); it != gp.follows.cend(); it++)
-			{
-				if (it != gp.follows.cbegin())
-					out << "/";
-				out << convTag2Str(*it);
-			}
-			out << "\n";
-		}
-		//声明结点属性
-		out << "\" shape=\"box\"];" << endl;
-	}
 
-	//声明转移关系
-	for (int i = 0; i < project_set_list.size(); i++)
-	{
-		for (const auto& tag_mov : action_go_map[i])
-		{
-			//只有移进才会转移
-			if (tag_mov.second.action_type != ActionType::shift_in)
-				continue;
-			else
-				out << "node_" << i << "->node_" << tag_mov.second.go << "[label=\"" << convTag2Str(tag_mov.first) << "\"];" << endl;
-		}
-	}
-
-	out << "}" << endl;
-	return;
-}
-*/
 void LR1_Parser::clear_all()
 {
     //清空树
@@ -594,27 +500,3 @@ void LR1_Parser::clear_all()
     //清空lexer的数据
     // this->lexer.clear_data();
 }
-
-
-
-/*int main()
-{
-	LR1_Parser lr1;
-
-	//lr1.init(R"(D:\Mydata\homework\大三上\课程\编译原理\大作业\test\grammar.txt)");
-
-	ofstream T_out;
-	ofstream D_out;
-    T_out.open(R"(C:\QT_Projects\LR1_parser\graph_Tree.dot)");
-    D_out.open(R"(C:\QT_Projects\LR1_parser\graph_DFA.dot)");
-
-    lr1.openGrammarFile(R"(C:\QT_Projects\LR1_parser\grammar.txt)");
-	lr1.initFirstList();
-	lr1.initActionGotoMap();
-
-	lr1.printVP_DFA(D_out);
-
-    lr1.parser(R"(C:\QT_Projects\LR1_parser\test_program.txt)");
-	lr1.printTree(T_out);
-	return 0;
-}*/

@@ -60,10 +60,6 @@ bool Lexer::set_errors(string s) {
 	return true;
 }
 
-/*vector<Token>* lexical_analysis::get_table()
-{
-	return &table;
-}*/
 Statistics Lexer::get_sta()
 {
 	return sta;
