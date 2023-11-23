@@ -116,18 +116,17 @@ State LR1_Parser::init(ifstream& grammar_productions_file, ofstream&of)
 	return ret;
 }
 
-State LR1_Parser::lex(ifstream& source_file, ofstream&of)
+State LR1_Parser::lex(ifstream& source_file, ofstream&of, ofstream& debug)
 {
 	int ret;
-	ofstream debug("debug.txt",ios::out);
 	if(ret=lexer.start_analysis(source_file,debug))
 	{
-		cerr<<"analysis ret returned "<<ret<<endl;
+		debug<<"analysis ret returned "<<ret<<endl;
 		return State::ERROR;
 	}
 	if(ret=lexer.output_analysis(of))
 	{
-		cerr<<"output ret returned "<<ret<<endl;
+		debug<<"output ret returned "<<ret<<endl;
 		return State::ERROR;
 	}
 	return State::OK;

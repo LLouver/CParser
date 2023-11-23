@@ -5,11 +5,17 @@ int main(int argc, char* argv[])
 {
     //ÖÐÎÄ
     Compiler compiler;
-    compiler.init();
+    if(compiler.init()!=State::OK)
+        return 1;
     if(compiler.compile()==State::OK)
     {
         compiler.output();
     }
+    else
+    {
+        return -1;
+    }
+    return 0;
     /*
     Lexer txysb;
     txysb.set_input("./test2.c");

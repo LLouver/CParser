@@ -3,6 +3,7 @@
 #include "common.h"
 #include "parser.h"
 #include <iostream>
+#include <sstream>
 class Compiler
 {
 private:
@@ -20,8 +21,10 @@ private:
     std::ofstream lexical_table_file;
     //LR分析过程日志文件
     std::ofstream parser_log_file;
+    //错误日志文件
+    std::ofstream debug_log_file;
 public:
-    void init();
+    State init();
     State compile();
     void output();
 };

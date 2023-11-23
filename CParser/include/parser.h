@@ -127,12 +127,10 @@ private:
     State initActionGotoMap();	//求识别活前缀的DFA
 
 public:		//记得改为private
-    LR1_Parser();
-    ~LR1_Parser();
 
     void print_LR_table(ofstream& of);
     State init(ifstream& grammar_productions_file,ofstream& output_file);			//语法分析器初始化
-	State lex(ifstream& source_file,ofstream& output_file);
+	State lex(ifstream& source_file,ofstream& output_file,ofstream& debug_file);
     void print_parse_state(ofstream&of, const int& stack, const Symbol& t_stack, const Token& token, const Action& action);
     State parse(Token&, ofstream& output_file);	//语法分析
     void printTreeNode(ofstream&of, const int node_id);
