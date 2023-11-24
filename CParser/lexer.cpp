@@ -66,9 +66,9 @@ Statistics Lexer::get_sta()
 }
 State Lexer::getNextLexical(Token& next)
 {
-	if(count == table.size())
+	if (count == table.size())
 	{
-		next=Token((int)Symbol::the_end,-1,table[table.size()-1].line+1,1,"");
+		next = Token((int)Symbol::the_end, -1, table[table.size() - 1].line + 1, 1, "");
 		return State::OK;
 	}
 	if (count >= table.size())
@@ -76,11 +76,11 @@ State Lexer::getNextLexical(Token& next)
 	// .. s=(Symbol)0;
 	next = table[count];
 	count++;
-	cerr<<"put a token"<< next;
+	cerr << "put a token" << next;
 	return State::OK;
 }
 
-int Lexer::start_analysis(ifstream& source_file,ofstream& debug_file)
+int Lexer::start_analysis(ifstream& source_file, ofstream& debug_file)
 {
 	int ret = 0;
 	Id.clear();
@@ -107,14 +107,15 @@ int Lexer::start_analysis(ifstream& source_file,ofstream& debug_file)
 			continue;
 		else
 		{
-			while (buffer[ptr] != '\0')
+			while (ptr < buffer.size() || (ptr == buffer.size() && (state == 2 || state == 4)))
 			{
 				get_char();
 				get_nbc();
-				if (character == '\0')
-					break;
+				if (ptr < buffer.size())
+				{
+					count_col = ptr;    //记录首字符位置
+				}
 
-				count_col = ptr;    //记录首字符位置
 
 				/*************************标识符识别*************************/
 
@@ -184,9 +185,10 @@ int Lexer::start_analysis(ifstream& source_file,ofstream& debug_file)
 				}
 				else if (state == 2 || state == 4) //已经识别到整数/小数，判断之后是否为数字结束的标志，如果后面是字母，则是错误
 				{
-					if (is_bound(character) || is_operator(character) || character == ' ')
+					if (character == '\0' || is_bound(character) || is_operator(character) || character == ' ')
 					{
-						sta.add_num();
+						if (character != '\0')
+							sta.add_num();
 						value = insert_num();
 						table.push_back(Token(2, Number[value], sta.get_row(), count_col, value));
 						retract();      //回退
@@ -397,7 +399,7 @@ int Lexer::start_analysis(ifstream& source_file,ofstream& debug_file)
 						else
 						{
 							string tmp;
-							tmp+=chtemp;
+							tmp += chtemp;
 							category = get_op(tmp);
 						}
 						retract();
@@ -528,10 +530,10 @@ int Lexer::output_analysis(ofstream& of)
 	if (!outfile_table.is_open())
 		return 3;
 */
-	//how_statistics(debug_file);
+//how_statistics(debug_file);
 	show_result(of);
 	//show_table(outfile_table);
-	cerr<<"debug info output finished\n";
+	cerr << "debug info output finished\n";
 	return 0;
 }
 
@@ -554,20 +556,20 @@ void Lexer::show_result(ofstream& of)
 			"识别结果---------------------------------" << endl;
 	outfile << "记号\t\t属性" << endl;
 	*/
-	of<< "<table>\n<thead>\n<tr>";
-	of<<"<th>string</th><th>Symbol</th><th>line</th><th>col</th>";
-	of<<"</tr></thead>\n<tbody>";
-	for (auto i=table.begin();i!=table.end();++i)
+	of << "<table>\n<thead>\n<tr>";
+	of << "<th>string</th><th>Symbol</th><th>line</th><th>col</th>";
+	of << "</tr></thead>\n<tbody>";
+	for (auto i = table.begin(); i != table.end(); ++i)
 	{
 		// of << table[i] << "\t\t" << table[i].value << endl;
-		of<<"<tr>";
-		of<<"<td>"<<(*i).value<<"</td>";
-		of<<"<td>"<<convSymbol2Str((*i).symbol_id)<<"</td>";
-		of<<"<td>"<<(*i).line<<"</td>";
-		of<<"<td>"<<(*i).col<<"</td>";
-		of<<"</tr>\n";
+		of << "<tr>";
+		of << "<td>" << (*i).value << "</td>";
+		of << "<td>" << convSymbol2Str((*i).symbol_id) << "</td>";
+		of << "<td>" << (*i).line << "</td>";
+		of << "<td>" << (*i).col << "</td>";
+		of << "</tr>\n";
 	}
-	of<<"</tbody>"<<"</table>";
+	of << "</tbody>" << "</table>";
 }
 
 void Lexer::show_table(ofstream& outfile)
@@ -625,8 +627,8 @@ void Lexer::show_table(ofstream& outfile)
 	}
 }
 
-ostream& operator<<(ostream&o, Token r_token)
+ostream& operator<<(ostream& o, Token r_token)
 {
-	o<<"$"<<r_token.line<<":"<<r_token.col<<","<<(int)r_token.symbol_id<<":"<<convSymbol2Str((Symbol)r_token.symbol_id)<<"$";
+	o << "$" << r_token.line << ":" << r_token.col << "," << (int)r_token.symbol_id << ":" << convSymbol2Str((Symbol)r_token.symbol_id) << "$";
 	return o;
 }
