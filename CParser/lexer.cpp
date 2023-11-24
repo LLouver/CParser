@@ -186,9 +186,8 @@ int Lexer::start_analysis(ifstream& source_file, ofstream& debug_file)
 				else if (state == 2 || state == 4) //已经识别到整数/小数，判断之后是否为数字结束的标志，如果后面是字母，则是错误
 				{
 					if (character == '\0' || is_bound(character) || is_operator(character) || character == ' ')
-					{
-						if (character != '\0')
-							sta.add_num();
+					{						
+						sta.add_num();
 						value = insert_num();
 						table.push_back(Token(2, Number[value], sta.get_row(), count_col, value));
 						retract();      //回退
