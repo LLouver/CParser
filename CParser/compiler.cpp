@@ -71,12 +71,12 @@ State Compiler::compile()
     }
     // parser.lex()
     Token r_token;
-    if(parser.parse(r_token,parser_log_file)!=State::OK)
+    /*if(parser.parse(r_token,parser_log_file)!=State::OK)
     {
         debug_log_file<<"parser error at "<<r_token<<"\n";
         debug_log_file<<"parse aborted\n";
         return State::ERROR;
-    }
+    }*/
     debug_log_file<<"parse finished\n";
     return State::OK;
 }

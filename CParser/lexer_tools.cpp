@@ -81,6 +81,8 @@ bool is_operator(char ch)
 
 bool is_bound(char ch)
 {
+	if(ch == '\0')
+		return true;
 	for (int i = 0; i < int(Bound.size()); i++)
 	{
 		if (Bound[i] == ch)
